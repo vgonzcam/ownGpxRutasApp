@@ -31,6 +31,30 @@ El service worker només funciona servit per http(s) (no amb file://), i cada ru
 2. Haz `git push`. Nada más — `rutas/manifest.json` se regenera solo en cada despliegue (ver más abajo), no lo edites a mano.
 3. El nombre y ubicación de la ruta se toman del tag `<name>` del GPX, en formato `Nombre, Ubicación`. Distancia, desnivel, duración y dificultad se calculan automáticamente a partir de los puntos del track.
 
+### Corregir la dificultad a mano
+
+La dificultad se calcula solo a partir del desnivel por km (no tiene en cuenta distancia total ni terreno técnico), así que a veces no acierta. Si quieres fijarla tú, añade una entrada en `rutas/config.json` → `difficultyOverrides`, usando la misma ruta de archivo que aparece en `manifest.json`:
+
+```json
+"difficultyOverrides": {
+  "ROAD/rc23-road-llarga-150k.gpx": "dificil"
+}
+```
+
+Valores posibles: `"facil"`, `"dificil"`, `"moltDificil"`. Este archivo **no** se regenera automáticamente (a diferencia de `manifest.json`), así que los cambios se quedan aunque hagas push de nuevas rutas.
+
+### Corregir la duración estimada a mano
+
+Igual que la dificultad, la duración es una estimación por fórmula (no personalizada, no cuenta paradas). Para fijarla a mano, añade una entrada en `rutas/config.json` → `durationOverrides`, con el texto exacto que quieres que se muestre:
+
+```json
+"durationOverrides": {
+  "ROAD/rc23-road-llarga-150k.gpx": "5h 30m"
+}
+```
+
+Igual que `difficultyOverrides`, esta clave tiene que coincidir con el `"file"` de `manifest.json`, y el archivo no se regenera solo.
+
 Si quieres comprobar en local qué manifest se generaría antes de hacer push:
 
 ```
@@ -54,6 +78,7 @@ Todas las imágenes (logo del club, logos de patrocinadores) se guardan en la ca
 El workflow `.github/workflows/deploy.yml` se dispara en cada push a `main`: regenera `rutas/manifest.json` a partir de las carpetas de `rutas/` y publica todo el sitio en GitHub Pages.
 
 Configuración inicial (una sola vez, manual):
+
 1. Crea el repositorio en GitHub y sube este proyecto (`git push`).
 2. En el repo, ve a **Settings → Pages** y en "Source" elige **GitHub Actions**.
 3. El siguiente push a `main` desplegará el sitio automáticamente.

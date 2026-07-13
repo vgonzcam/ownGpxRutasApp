@@ -68,23 +68,23 @@ function rgbStr(c, alpha) {
 }
 
 // Base palette. Contrast-checked against WCAG AA (4.5:1 for normal text);
-// linkColor, the "molt dificil" red and dark-mode "facil" green are adjusted
-// shades of the source palette's blue/destructive/secondary — the raw values
-// were too light/dark to pass as text on their paired background.
+// light destructive and dark primary are darkened one step from the source
+// palette (red-600→red-700, blue-500→blue-600) — the raw values were too
+// light to pass as text against their paired (white) foreground.
 const defaultThemeConfig = {
   light: {
-    background: [245, 245, 245], foreground: [23, 23, 23],
-    card: [255, 255, 255], primary: [234, 179, 8], primaryForeground: [23, 23, 23],
-    muted: [245, 245, 245], mutedForeground: [115, 115, 115],
-    accent: [254, 252, 232], accentForeground: [133, 77, 14],
-    destructive: [203, 58, 58], destructiveForeground: [255, 255, 255], border: [229, 229, 229],
+    background: [255, 255, 255], foreground: [15, 23, 42],
+    card: [255, 255, 255], primary: [37, 99, 235], primaryForeground: [255, 255, 255],
+    muted: [241, 245, 249], mutedForeground: [100, 116, 139],
+    accent: [254, 249, 195], accentForeground: [133, 77, 14],
+    destructive: [220, 38, 38], destructiveForeground: [255, 255, 255], border: [226, 232, 240],
   },
   dark: {
-    background: [10, 10, 10], foreground: [250, 250, 250],
-    card: [18, 18, 18], primary: [250, 204, 21], primaryForeground: [0, 0, 0],
-    muted: [26, 26, 26], mutedForeground: [163, 163, 163],
-    accent: [30, 27, 2], accentForeground: [250, 204, 21],
-    destructive: [153, 27, 27], destructiveForeground: [250, 250, 250], border: [38, 38, 38],
+    background: [15, 23, 42], foreground: [248, 250, 252],
+    card: [30, 41, 59], primary: [37, 99, 235], primaryForeground: [255, 255, 255],
+    muted: [30, 41, 59], mutedForeground: [148, 163, 184],
+    accent: [30, 58, 138], accentForeground: [253, 230, 138],
+    destructive: [127, 29, 29], destructiveForeground: [248, 250, 252], border: [51, 65, 85],
   },
 };
 
@@ -110,17 +110,17 @@ function rebuildThemeObjects() {
       heroBg: rgbStr(palette.light.accent), sponsorBg: rgbStr(palette.light.muted), chipBg: rgbStr(palette.light.muted), chipBgActive: rgbStr(palette.light.primary),
       chipFgActive: rgbStr(palette.light.primaryForeground), buttonBg: rgbStr(palette.light.primary), buttonFg: rgbStr(palette.light.primaryForeground),
       typeBadgeBg: rgbStr(palette.light.primary), typeBadgeFg: rgbStr(palette.light.primaryForeground),
-      areaFill: rgbStr(palette.light.primary, 0.35), lineStroke: rgbStr([64, 64, 64]), linkColor: rgbStr(palette.light.accentForeground),
-      shadowCard: '0 2px 15px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.05)',
+      areaFill: rgbStr(palette.light.primary, 0.35), lineStroke: rgbStr(palette.light.primary), linkColor: rgbStr(palette.light.accentForeground),
+      shadowCard: '0 4px 12px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.08)',
     },
     dark: {
       screenBg: rgbStr(palette.dark.background), cardBg: rgbStr(palette.dark.card), border: rgbStr(palette.dark.border),
       textPrimary: rgbStr(palette.dark.foreground), textSecondary: rgbStr(palette.dark.mutedForeground), textTertiary: rgbStr(palette.dark.mutedForeground),
       heroBg: rgbStr(palette.dark.accent), sponsorBg: rgbStr(palette.dark.muted), chipBg: rgbStr(palette.dark.muted), chipBgActive: rgbStr(palette.dark.primary),
       chipFgActive: rgbStr(palette.dark.primaryForeground), buttonBg: rgbStr(palette.dark.primary), buttonFg: rgbStr(palette.dark.primaryForeground),
-      typeBadgeBg: rgbStr([96, 165, 250]), typeBadgeFg: rgbStr([0, 0, 0]),
-      areaFill: rgbStr(palette.dark.primary, 0.3), lineStroke: rgbStr([255, 255, 255]), linkColor: rgbStr(palette.dark.accentForeground),
-      shadowCard: '0 10px 20px rgba(0,0,0,0.30), 0 1px 2px rgba(0,0,0,0.30)',
+      typeBadgeBg: rgbStr(palette.dark.primary), typeBadgeFg: rgbStr(palette.dark.primaryForeground),
+      areaFill: rgbStr(palette.dark.primary, 0.3), lineStroke: rgbStr([96, 165, 250]), linkColor: rgbStr(palette.dark.accentForeground),
+      shadowCard: '0 10px 20px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.4)',
     },
   };
 }
@@ -373,6 +373,8 @@ async function loadRoutes() {
     const entries = await manifestRes.json();
     if (!entries || !entries.length) { state.status = 'empty'; render(); return; }
     const routes = [];
+    const difficultyOverrides = (state.config && state.config.difficultyOverrides) || {};
+    const durationOverrides = (state.config && state.config.durationOverrides) || {};
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
       const filename = typeof entry === 'string' ? entry : entry.file;
@@ -380,7 +382,11 @@ async function loadRoutes() {
       const res = await fetch('rutas/' + filename);
       const text = await res.text();
       const route = parseGpx(text, i + 1, trackType);
-      if (route) routes.push(route);
+      if (route) {
+        if (difficultyOverrides[filename]) route.diffKey = difficultyOverrides[filename];
+        if (durationOverrides[filename]) route.duration = durationOverrides[filename];
+        routes.push(route);
+      }
     }
     if (!routes.length) { state.status = 'empty'; render(); return; }
     const typesFound = [...new Set(routes.map(r => r.trackType))];

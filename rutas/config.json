@@ -4,9 +4,26 @@
   "orgTagline": "ESPORT & NATURA",
   "contactEmail": "cecastelldans@gmail.com",
   "copyrightText": "©2025 Club Esportiu Castelldans.",
+  "difficultyOverrides": {
+    "CASTELLBIKE/open-maxxis-castelldans-llarg-2026.gpx": "dificil"
+  },
+  "durationOverrides": {
+    "CASTELLBIKE/open-maxxis-castelldans-llarg-2026.gpx": "5h 30m"
+  },
   "filters": {
-    "trackTypes": ["MTB", "ROAD", "GRAVEL", "TRAIL", "BIKEPACKING", "CASTELLBIKE"],
-    "difficultyLabels": { "facil": "Fàcil", "dificil": "Difícil", "moltDificil": "Molt difícil" },
+    "trackTypes": [
+      "MTB",
+      "ROAD",
+      "GRAVEL",
+      "TRAIL",
+      "BIKEPACKING",
+      "CASTELLBIKE"
+    ],
+    "difficultyLabels": {
+      "facil": "Fàcil",
+      "dificil": "Difícil",
+      "moltDificil": "Molt difícil"
+    },
     "distanceBuckets": [
       { "key": "lt10", "label": "< 10 km", "max": 10 },
       { "key": "10-30", "label": "10-30 km", "min": 10, "max": 30 },
@@ -19,16 +36,31 @@
     ]
   },
   "social": [
-    { "network": "instagram", "url": "https://www.instagram.com/cecastelldans/" },
-    { "network": "instagram", "url": "https://www.instagram.com/rural.cycling/" },
-    { "network": "instagram", "url": "https://www.instagram.com/garriguesbike/" }
+    {
+      "network": "instagram",
+      "url": "https://www.instagram.com/cecastelldans/"
+    },
+    {
+      "network": "instagram",
+      "url": "https://www.instagram.com/rural.cycling/"
+    },
+    {
+      "network": "instagram",
+      "url": "https://www.instagram.com/garriguesbike/"
+    }
   ],
   "sponsors": [
-    { "name": "Vaude", "logo": "patrocinadors/vaude-logo-spirit_blanc_edited.avif" },
+    {
+      "name": "Vaude",
+      "logo": "patrocinadors/vaude-logo-spirit_blanc_edited.avif"
+    },
     { "name": "Bergamont", "logo": "patrocinadors/bergamont.avif" },
     { "name": "Infisport", "logo": "patrocinadors/infisport.avif" },
     { "name": "Rural Cycling", "logo": "patrocinadors/rural_cicling.avif" },
-    { "name": "Club Esportiu Castelldans", "logo": "patrocinadors/club_esportiu.avif" },
+    {
+      "name": "Club Esportiu Castelldans",
+      "logo": "patrocinadors/club_esportiu.avif"
+    },
     { "name": "Garrigues Bike", "logo": "patrocinadors/garrigues_bike.avif" },
     { "name": "Ajuntament", "logo": "patrocinadors/ajuntament.avif" },
     { "name": "Quetzal Sportswear", "logo": "patrocinadors/quetzal.avif" },
