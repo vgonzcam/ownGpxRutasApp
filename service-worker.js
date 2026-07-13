@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rutes-gpx-v1';
+const CACHE_NAME = 'rutes-gpx-v2';
 const APP_SHELL = [
   './',
   'index.html',
@@ -32,7 +32,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-store' })
       .then((res) => {
         const copy = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => {});
