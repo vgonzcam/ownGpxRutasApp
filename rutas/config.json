@@ -1,0 +1,68 @@
+{
+  "siteTitle": "Les teves rutes",
+  "orgName": "Club Esportiu Castelldans",
+  "orgTagline": "ESPORT & NATURA",
+  "contactEmail": "cecastelldans@gmail.com",
+  "copyrightText": "©2025 Club Esportiu Castelldans.",
+  "filters": {
+    "trackTypes": ["MTB", "ROAD", "GRAVEL", "TRAIL", "BIKEPACKING", "CASTELLBIKE"],
+    "difficultyLabels": { "facil": "Fàcil", "dificil": "Difícil", "moltDificil": "Molt difícil" },
+    "distanceBuckets": [
+      { "key": "lt10", "label": "< 10 km", "max": 10 },
+      { "key": "10-30", "label": "10-30 km", "min": 10, "max": 30 },
+      { "key": "gt30", "label": "> 30 km", "min": 30 }
+    ],
+    "elevationBuckets": [
+      { "key": "lt200", "label": "< 200 m", "max": 200 },
+      { "key": "200-500", "label": "200-500 m", "min": 200, "max": 500 },
+      { "key": "gt500", "label": "> 500 m", "min": 500 }
+    ]
+  },
+  "social": [
+    { "network": "instagram", "url": "https://www.instagram.com/cecastelldans/" },
+    { "network": "instagram", "url": "https://www.instagram.com/rural.cycling/" },
+    { "network": "instagram", "url": "https://www.instagram.com/garriguesbike/" }
+  ],
+  "sponsors": [
+    { "name": "Vaude", "logo": "patrocinadors/vaude-logo-spirit_blanc_edited.avif" },
+    { "name": "Bergamont", "logo": "patrocinadors/bergamont.avif" },
+    { "name": "Infisport", "logo": "patrocinadors/infisport.avif" },
+    { "name": "Rural Cycling", "logo": "patrocinadors/rural_cicling.avif" },
+    { "name": "Club Esportiu Castelldans", "logo": "patrocinadors/club_esportiu.avif" },
+    { "name": "Garrigues Bike", "logo": "patrocinadors/garrigues_bike.avif" },
+    { "name": "Ajuntament", "logo": "patrocinadors/ajuntament.avif" },
+    { "name": "Quetzal Sportswear", "logo": "patrocinadors/quetzal.avif" },
+    { "name": "Diputació de Lleida", "logo": "patrocinadors/diputacio.avif" },
+    { "name": "Surfdevils", "logo": "patrocinadors/surfdevils.avif" }
+  ],
+  "sections": [
+    {
+      "type": "banner",
+      "image": "club.avif",
+      "title": "Club Esportiu Castelldans",
+      "body": "L'any 2013 un grup d'apassionats per l'esport es van reunir per formar el Club Esportiu Castelldans. Bons coneixedors de Les Garrigues, zona amb infinitats de camins i corriols, petites valls que fan que tinguem un territori brutal per practicar el que més ens agrada.\n\nJa han passat més de 10 anys i som aquí per oferir-vos TOT el que tenim al pati de casa nostra.",
+      "linkLabel": "Vols venir?",
+      "linkUrl": "https://cecastelldans.wixsite.com/inici/blank-1"
+    },
+    {
+      "type": "link",
+      "label": "Road",
+      "url": "https://cecastelldans.wixsite.com/inici/road"
+    },
+    {
+      "type": "link",
+      "label": "Bikepacking",
+      "url": "https://cecastelldans.wixsite.com/inici/bikepacking"
+    },
+    {
+      "type": "link",
+      "label": "Botiga",
+      "url": "https://cecastelldans.wixsite.com/inici/maillot"
+    },
+    {
+      "type": "link",
+      "label": "Contacte",
+      "url": "https://cecastelldans.wixsite.com/inici/blank-1"
+    }
+  ]
+}

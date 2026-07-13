@@ -1,0 +1,15 @@
+# Backup del prototipo original, no hace falta en el repo real
+--idea/
+
+# Editor / entorno local
+.vscode/
+.claude/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Por si en el futuro se añade tooling con dependencias
+node_modules/
+
+promt.md
