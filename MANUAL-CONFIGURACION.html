@@ -1,0 +1,967 @@
+<title>Manual de configuración — Rutes GPX</title>
+<style>
+  /* Tokens tomados literalmente de rutas/theme.json (la propia app), no una paleta nueva */
+  :root {
+    --paper: #ffffff;          /* background (light) */
+    --paper-raised: #ffffff;   /* card (light) */
+    --ink: #0f172a;            /* foreground (light) */
+    --ink-soft: #64748b;       /* mutedForeground (light) */
+    --ink-faint: rgba(15,23,42,0.45);
+    --accent: #2563eb;         /* primary (light) */
+    --accent-ink: #2563eb;     /* primary, reused for links/active nav */
+    --key-bg: #fef9c3;         /* accent (light) */
+    --key-ink: #854d0e;        /* accentForeground (light) */
+    --line: #e2e8f0;           /* border (light) */
+    --code-bg: #f1f5f9;        /* muted (light) */
+    --code-ink: #0f172a;       /* foreground (light) */
+    --warn: #dc2626;           /* destructive (light) */
+    --radius: 10px;
+    --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", "URW Palladio L", Georgia, serif;
+    --font-body: -apple-system, "Segoe UI", system-ui, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0f172a;          /* background (dark) */
+      --paper-raised: #1e293b;   /* card (dark) */
+      --ink: #f8fafc;            /* foreground (dark) */
+      --ink-soft: #94a3b8;       /* mutedForeground (dark) */
+      --ink-faint: rgba(248,250,252,0.45);
+      --accent: #2563eb;         /* primary (dark) */
+      --accent-ink: #7fa8f5;     /* primary, lightened for AA on dark paper */
+      --key-bg: #1e3a8a;         /* accent (dark) */
+      --key-ink: #fde68a;        /* accentForeground (dark) */
+      --line: #334155;           /* border (dark) */
+      --code-bg: #1e293b;        /* muted (dark) */
+      --code-ink: #f8fafc;       /* foreground (dark) */
+      --warn: #f87171;           /* destructive, lightened for AA on dark paper */
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0f172a;
+    --paper-raised: #1e293b;
+    --ink: #f8fafc;
+    --ink-soft: #94a3b8;
+    --ink-faint: rgba(248,250,252,0.45);
+    --accent: #2563eb;
+    --accent-ink: #7fa8f5;
+    --key-bg: #1e3a8a;
+    --key-ink: #fde68a;
+    --line: #334155;
+    --code-bg: #1e293b;
+    --code-ink: #f8fafc;
+    --warn: #f87171;
+  }
+  :root[data-theme="light"] {
+    --paper: #ffffff;
+    --paper-raised: #ffffff;
+    --ink: #0f172a;
+    --ink-soft: #64748b;
+    --ink-faint: rgba(15,23,42,0.45);
+    --accent: #2563eb;
+    --accent-ink: #2563eb;
+    --key-bg: #fef9c3;
+    --key-ink: #854d0e;
+    --line: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --code-ink: #0f172a;
+    --warn: #dc2626;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+  }
+  a { color: var(--accent-ink); }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; font-weight: 600; color: var(--ink); }
+  code, .mono { font-family: var(--font-mono); }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr);
+    gap: 40px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 120px;
+  }
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- sidebar ---------- */
+  nav.toc {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    font-size: 13.5px;
+  }
+  @media (max-width: 860px) {
+    nav.toc { position: static; margin-bottom: 8px; }
+  }
+  nav.toc .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  nav.toc ol {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    border-left: 1px solid var(--line);
+  }
+  nav.toc li { margin: 0; }
+  nav.toc a {
+    display: block;
+    padding: 5px 0 5px 14px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    margin-left: -1px;
+  }
+  nav.toc a:hover { color: var(--ink); border-left-color: var(--accent); }
+  nav.toc .file-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    padding: 10px 0 4px 14px;
+  }
+
+  /* ---------- main content ---------- */
+  header.hero {
+    max-width: 620px;
+    margin-bottom: 56px;
+  }
+  header.hero .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 12px;
+    color: var(--accent-ink);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  header.hero h1 { font-size: 34px; margin: 0 0 14px; }
+  header.hero p { color: var(--ink-soft); font-size: 15.5px; max-width: 56ch; }
+
+  section.file-section {
+    margin-bottom: 72px;
+    padding-top: 8px;
+  }
+  h2.file-title {
+    font-size: 15px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    margin: 0 0 8px;
+  }
+  h2.file-title .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .file-note { color: var(--ink-soft); font-size: 14px; max-width: 62ch; margin: 0 0 36px; }
+
+  .field {
+    border-top: 1px solid var(--line);
+    padding: 28px 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 28px;
+    scroll-margin-top: 20px;
+  }
+  @media (max-width: 720px) {
+    .field { grid-template-columns: 1fr; }
+  }
+  .field-copy h3 {
+    font-size: 17px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .field-copy h3 .key {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    background: var(--key-bg);
+    color: var(--key-ink);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .type-pill {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 1px 8px;
+    text-transform: lowercase;
+  }
+  .field-copy p { color: var(--ink-soft); font-size: 14px; margin: 8px 0 0; }
+  .field-copy p.also { font-size: 13px; color: var(--ink-faint); margin-top: 10px; }
+
+  pre.snippet {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 12px 0 0;
+  }
+  .str { color: var(--accent-ink); }
+  .num { color: #a8763c; }
+
+  .mockup-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mockup-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-faint);
+  }
+  .mockup {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+  }
+  .callout {
+    position: absolute;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 3px var(--paper-raised);
+  }
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .legend .row { display: flex; gap: 8px; align-items: baseline; }
+  .legend .num {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transform: translateY(1px);
+  }
+
+  /* ================= app-mockup internals (fixed brand colors, not doc theme) ================= */
+  .app { font-family: "Poppins", var(--font-body); }
+  .app-light { background: #fff; color: #0f172a; }
+  .app-dark  { background: #0f172a; color: #f8fafc; }
+
+  .app-header { padding: 16px 18px 10px; display: flex; align-items: flex-start; justify-content: space-between; }
+  .app-header .title { font-family: 'Space Grotesk', var(--font-display); font-weight: 700; font-size: 17px; }
+  .app-header .tagline { font-size: 9.5px; letter-spacing: .08em; font-weight: 600; opacity: .55; margin-top: 2px; }
+  .app-toggle { width: 26px; height: 26px; border-radius: 50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .app-light .app-toggle { background:#f1f5f9; }
+  .app-dark  .app-toggle { background:#1e293b; }
+
+  .app-banner { margin: 0 18px 14px; border-radius: 12px; padding: 14px; background: #fef9c3; }
+  .app-dark .app-banner { background: #1e3a8a; }
+  .app-banner .btitle { font-weight: 700; font-size: 12.5px; }
+  .app-banner .bbody { font-size: 10px; opacity: .75; margin-top: 5px; line-height: 1.4; }
+  .app-banner .blink { font-size: 11px; font-weight: 700; margin-top: 8px; color: #854d0e; }
+  .app-dark .app-banner .blink { color: #fde68a; }
+
+  .app-card { margin: 0 18px 14px; border-radius: 14px; border: 1px solid #e2e8f0; overflow: hidden; }
+  .app-dark .app-card { border-color: #334155; }
+  .app-card .hero { height: 60px; background: #fef9c3; position: relative; }
+  .app-dark .app-card .hero { background: #1e293b; }
+  .app-card .type-badge { position:absolute; top:8px; left:8px; font-size:8px; font-weight:700; letter-spacing:.03em; padding:3px 7px; border-radius:20px; background:#2563eb; color:#fff; }
+  .app-card .body { padding: 10px 12px; }
+  .app-card .row1 { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .app-card .name { font-weight: 700; font-size: 12.5px; }
+  .app-card .loc { font-size: 10px; opacity: .6; margin-top: 2px; }
+  .app-card .diff { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 20px; flex-shrink:0; }
+  .app-card .stats { display:flex; gap:12px; margin-top:8px; font-size: 10px; }
+  .app-card .stats b { font-size: 11.5px; }
+
+  .app-chips { display:flex; gap:6px; padding: 0 18px 12px; flex-wrap: wrap; }
+  .app-chip { font-size: 9.5px; font-weight:600; padding: 5px 10px; border-radius: 20px; background:#f1f5f9; }
+  .app-dark .app-chip { background:#1e293b; }
+  .app-chip.active { background:#2563eb; color:#fff; }
+
+  .app-stat-tile { border-radius: 10px; border:1px solid #e2e8f0; padding:8px 10px; }
+  .app-dark .app-stat-tile { border-color:#334155; }
+  .app-stat-tile .lbl { font-size: 8.5px; opacity:.6; }
+  .app-stat-tile .val { font-weight:700; font-size:14px; margin-top:2px; }
+
+  .app-footer { margin: 10px 18px 16px; border-radius: 14px; border:1px solid #e2e8f0; padding: 14px; }
+  .app-dark .app-footer { border-color:#334155; }
+  .app-footer .col-title { font-size: 9px; text-transform:uppercase; letter-spacing:.06em; opacity:.55; margin-bottom:8px; }
+  .app-footer .link { font-size: 10.5px; font-weight:600; margin-bottom: 5px; }
+  .app-footer .cols { display:flex; gap: 20px; }
+  .app-footer .social { display:flex; gap:6px; margin-top:2px; }
+  .app-footer .dot { width:22px; height:22px; border-radius:50%; background:#f1f5f9; }
+  .app-dark .app-footer .dot { background:#1e293b; }
+  .app-footer hr { border:none; border-top:1px solid #e2e8f0; margin: 10px 0; }
+  .app-dark .app-footer hr { border-top-color:#334155; }
+  .app-footer .copy { font-size: 9.5px; opacity:.55; }
+
+  .app-sponsors { margin: 0 18px 14px; border-radius: 14px; padding: 12px; background:#f1f5f9; }
+  .app-dark .app-sponsors { background:#1e293b; }
+  .app-sponsors .col-title { font-size: 9px; text-transform:uppercase; letter-spacing:.06em; opacity:.55; margin-bottom:8px; }
+  .app-sponsors .grid { display:grid; grid-template-columns: repeat(4,1fr); gap:6px; }
+  .app-sponsors .tile { height: 24px; border-radius:6px; background:#fff; }
+  .app-dark .app-sponsors .tile { background:#0f172a; }
+
+  .app-detail-head { padding: 14px 16px 4px; }
+  .app-detail-head .name { font-family:'Space Grotesk', var(--font-display); font-weight:700; font-size:15px; }
+  .app-detail-head .loc { font-size: 10.5px; opacity:.6; margin-top:2px; }
+  .app-detail-stats { display:grid; grid-template-columns: repeat(2,1fr); gap:8px; padding: 10px 16px; }
+  .app-detail-card { margin: 0 16px 14px; border-radius: 12px; border:1px solid #e2e8f0; }
+  .app-dark .app-detail-card { border-color:#334155; }
+  .app-detail-row { display:flex; justify-content:space-between; align-items:center; padding: 8px 12px; font-size: 10.5px; border-bottom:1px solid #e2e8f0; }
+  .app-dark .app-detail-row { border-bottom-color:#334155; }
+  .app-detail-row:last-child { border-bottom: none; }
+  .app-detail-row .lbl { opacity:.65; }
+  .app-detail-row .val { font-weight:700; }
+
+  .prereq {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .prereq li { display: flex; gap: 10px; }
+  .prereq li::before { content: '—'; color: var(--ink-faint); flex-shrink: 0; }
+  .prereq strong { color: var(--ink); }
+
+  ol.steps {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  ol.steps li { display: flex; gap: 12px; align-items: flex-start; }
+  ol.steps .n {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 12.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  ol.steps .t { font-size: 14px; color: var(--ink-soft); padding-top: 4px; }
+  ol.steps .t strong, ol.steps .t code { color: var(--ink); }
+
+  .table-scroll { overflow-x: auto; margin-top: 18px; }
+  table.calc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 640px; }
+  table.calc-table th, table.calc-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.calc-table th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); font-weight: 600; white-space: nowrap; }
+  table.calc-table td { color: var(--ink-soft); }
+  table.calc-table td.field-name { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  table.calc-table td code { font-size: 11.5px; }
+
+  .guide-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .guide-links a {
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--accent-ink);
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 12px;
+  }
+
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .swatch {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--paper-raised);
+  }
+  .swatch .pair { display: flex; height: 40px; }
+  .swatch .pair div { flex: 1; }
+  .swatch .meta { padding: 8px 10px; }
+  .swatch .meta .k { font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; }
+  .swatch .meta .u { font-size: 11px; color: var(--ink-soft); margin-top: 3px; }
+
+  .note-box {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--warn);
+    background: var(--code-bg);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-top: 20px;
+  }
+  .note-box strong { color: var(--ink); }
+
+  footer.end {
+    max-width: 620px;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 13.5px;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 50;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro">☀︎</button>
+
+<div class="shell">
+  <nav class="toc">
+    <div class="eyebrow">En esta página</div>
+    <div class="file-label">Guía rápida</div>
+    <ol>
+      <li><a href="#antes-de-empezar">Antes de empezar</a></li>
+      <li><a href="#anadir-ruta">Añadir una ruta nueva</a></li>
+      <li><a href="#anadir-tipo">Añadir un tipo nuevo</a></li>
+      <li><a href="#corregir-dato">Corregir un dato a mano</a></li>
+    </ol>
+    <div class="file-label">rutas/config.json</div>
+    <ol>
+      <li><a href="#identidad">Identidad del club</a></li>
+      <li><a href="#sponsors-toggle">Patrocinadores</a></li>
+      <li><a href="#overrides">Overrides de ruta</a></li>
+      <li><a href="#filtros">Filtros</a></li>
+      <li><a href="#social">Redes sociales</a></li>
+      <li><a href="#secciones">Banner y enlaces</a></li>
+    </ol>
+    <div class="file-label">rutas/theme.json</div>
+    <ol>
+      <li><a href="#tema-modelo">Cómo funciona</a></li>
+      <li><a href="#tema-tokens">Los 12 colores</a></li>
+      <li><a href="#tema-anotado">Dónde se ve cada uno</a></li>
+    </ol>
+    <div class="file-label">rutas/manifest.json</div>
+    <ol>
+      <li><a href="#manifest">No tocar</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Manual · Rutes GPX — Club Esportiu Castelldans</div>
+      <h1>Añadir rutas y entender cada campo</h1>
+      <p>Primero, la guía rápida para quien gestiona las rutas del día a día (sin saber Git ni programación). Después, campo a campo, qué hace cada valor de <code>rutas/config.json</code> y <code>rutas/theme.json</code>, con una miniatura de la app señalando exactamente dónde aparece.</p>
+    </header>
+
+    <!-- ================= Guía rápida ================= -->
+    <section class="file-section" id="guia">
+      <h2 class="file-title"><span class="dot"></span>Guía rápida — sin Git ni código</h2>
+      <p class="file-note">Todo esto se hace desde el navegador, en la página de GitHub. No hace falta instalar nada ni usar la terminal.</p>
+
+      <div class="field" id="antes-de-empezar" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3 style="font-size:15px;">Antes de empezar</h3>
+          <ul class="prereq">
+            <li><strong>Acceso a GitHub</strong> con permiso para subir archivos a este repositorio (si no lo tienes, pídeselo a quien mantiene la web — te tiene que añadir como colaborador).</li>
+            <li><strong>El archivo <code>.gpx</code></strong> de la ruta, exportado desde donde la hayáis grabado (Wikiloc, Strava, GPS del club, gpx.studio...).</li>
+            <li><strong>Saber de qué tipo es la ruta</strong> (<code>MTB</code>, <code>ROAD</code>, <code>GRAVEL</code>, <code>TRAIL</code>, <code>BIKEPACKING</code>, <code>CASTELLBIKE</code>...) — o crea uno nuevo si no encaja ninguno, ver más abajo.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="field" id="anadir-ruta" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3 style="font-size:15px;">Añadir una ruta nueva</h3>
+          <ol class="steps">
+            <li><span class="n">1</span><span class="t">Entra en <strong>github.com/vgonzcam/ownGpxRutasApp</strong>, carpeta <code>rutas</code> → carpeta del tipo de tu ruta (p. ej. <code>ROAD</code> o <code>GRAVEL</code>).</span></li>
+            <li><span class="n">2</span><span class="t">Botón <strong>"Add file"</strong> → <strong>"Upload files"</strong> → arrastra tu <code>.gpx</code>.</span></li>
+            <li><span class="n">3</span><span class="t">Baja al final, escribe un mensaje breve y haz clic en <strong>"Commit changes"</strong>.</span></li>
+            <li><span class="n">4</span><span class="t">Espera 1-2 minutos. Puedes comprobar el progreso en la pestaña <strong>"Actions"</strong> del repositorio (check verde ✅ = terminado).</span></li>
+            <li><span class="n">5</span><span class="t">Abre la web y busca tu ruta. Si no aparece, recarga forzado (<strong>Ctrl+Shift+R</strong>) o pruébalo en una ventana de incógnito.</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="field" id="anadir-tipo" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3 style="font-size:15px;">Añadir un tipo de ruta completamente nuevo</h3>
+          <p>Los tipos de ruta no son una lista cerrada en el código: son, literalmente, las carpetas que existen dentro de <code>rutas/</code>. Si el club empieza una modalidad nueva y ninguna de las carpetas actuales encaja, créala tú mismo:</p>
+          <ol class="steps">
+            <li><span class="n">1</span><span class="t">Carpeta <code>rutas</code> → <strong>"Add file"</strong> → <strong>"Upload files"</strong>.</span></li>
+            <li><span class="n">2</span><span class="t">Arrastra tu primer <code>.gpx</code> de ese tipo. Justo encima de la zona de subida hay un campo con la ruta de destino: escribe delante del nombre el de la carpeta nueva, por ejemplo <code>XC/mi-primera-ruta-xc.gpx</code>.</span></li>
+            <li><span class="n">3</span><span class="t"><strong>"Commit changes"</strong> — GitHub crea la carpeta sola, en el mismo paso, porque no existía.</span></li>
+          </ol>
+          <p class="also">En el siguiente despliegue, el filtro nuevo (p. ej. "XC") aparece solo en el listado, al final de la fila. Si quieres controlar su posición, hay una lista opcional de orden en <code>rutas/config.json</code> → <code>filters.trackTypes</code> — ver la sección <a href="#filtros">Filtros</a> más abajo.</p>
+        </div>
+      </div>
+
+      <div class="field" id="corregir-dato" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3 style="font-size:15px;">Cómo se calculan los datos de una ruta (y cómo corregirlos)</h3>
+          <p>En cuanto subes el <code>.gpx</code>, la web calcula sola todo lo que se ve en el listado y el detalle, a partir de los puntos del track. Son cálculos automáticos y a veces no aciertan del todo — puedes corregir cualquiera de ellos sin tocar el archivo GPX.</p>
+          <div class="table-scroll">
+            <table class="calc-table">
+              <thead><tr><th>Dato</th><th>¿Dónde se ve?</th><th>Cómo se calcula</th><th>Clave para corregirlo</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">Nombre</td><td>Listado y detalle</td><td>Del track del GPX, la parte antes de la coma en <code>&lt;name&gt;Nombre, Ubicación&lt;/name&gt;</code></td><td><code>name</code></td></tr>
+                <tr><td class="field-name">Ubicación</td><td>Listado y detalle</td><td>Del mismo <code>&lt;name&gt;</code>, la parte después de la coma</td><td><code>location</code></td></tr>
+                <tr><td class="field-name">Distància</td><td>Listado y detalle</td><td>Suma la distancia entre cada dos puntos consecutivos (fórmula de Haversine)</td><td><code>distanceKm</code></td></tr>
+                <tr><td class="field-name">Desnivell positiu</td><td>Listado y detalle</td><td>Suma los tramos en los que la altitud sube de un punto al siguiente</td><td><code>elevGain</code></td></tr>
+                <tr><td class="field-name">Desnivell negatiu</td><td>Solo detalle</td><td>Suma los tramos en los que la altitud baja</td><td><code>elevLoss</code></td></tr>
+                <tr><td class="field-name">Altitud màx. / mín.</td><td>Solo detalle</td><td>El punto más alto / más bajo del track</td><td><code>maxAlt</code> / <code>minAlt</code></td></tr>
+                <tr><td class="field-name">Durada estimada</td><td>Listado y detalle</td><td>Velocidad media estimada según el desnivel por km (~12-22 km/h), distancia ÷ velocidad</td><td><code>duration</code></td></tr>
+                <tr><td class="field-name">Dificultat</td><td>Listado y detalle</td><td>Desnivel por km: &gt;20 m/km "Molt difícil", &gt;10 "Difícil", si no "Fàcil"</td><td><code>difficulty</code></td></tr>
+                <tr><td class="field-name">Tipus de ruta</td><td>Solo detalle</td><td>Si el punto de inicio y el de fin están casi en el mismo sitio (Circular) o lejos (Lineal)</td><td><code>routeShape</code></td></tr>
+                <tr><td class="field-name">TrailRank</td><td>Solo detalle</td><td>Puntuación 1-99 que combina distancia y desnivel total</td><td><code>trailRank</code></td></tr>
+                <tr><td class="field-name">Perfil de l'etapa</td><td>Solo detalle</td><td>Se dibuja con todos los puntos de altitud del track</td><td><em>no corregible</em></td></tr>
+                <tr><td class="field-name">Etiqueta de tipo</td><td>Listado y detalle</td><td>La decide la carpeta donde subiste el archivo</td><td><em>mueve el archivo de carpeta</em></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="also" style="margin-top:14px;">Para corregir cualquiera de estos campos: abre <code>rutas/config.json</code> en GitHub, lápiz ✏️ para editar, y añade una entrada en <code>routeOverrides</code> con la clave exacta del archivo (carpeta + nombre, tal como aparece en <code>manifest.json</code>). Solo hace falta poner los campos que quieras corregir — el resto sigue calculándose solo.</p>
+          <p class="also">Sintaxis exacta, ejemplo con los 11 campos a la vez y la miniatura de cómo se ve aplicado: sección <a href="#overrides"><code>routeOverrides</code></a>, justo abajo.</p>
+        </div>
+        <div class="note-box">
+          Es un archivo JSON: cada llave <code>{</code> que abras se cierra con <code>}</code>, y cada campo lleva una coma después excepto el último de su bloque. Si algo se rompe (la web deja de cargar rutas), entra en la pestaña <strong>"History"</strong> del archivo en GitHub y vuelve a la versión anterior.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= rutas/config.json ================= -->
+    <section class="file-section" id="config">
+      <h2 class="file-title"><span class="dot"></span>rutas/config.json</h2>
+      <p class="file-note">Archivo de configuración general: identidad del club, patrocinadores, filtros, redes sociales y correcciones manuales de rutas. Se edita a mano y <strong>nunca</strong> se regenera solo (a diferencia de <code>manifest.json</code>).</p>
+
+      <div class="field" id="identidad">
+        <div class="field-copy">
+          <h3><span class="key">siteTitle</span> <span class="key">orgTagline</span> <span class="type-pill">string</span></h3>
+          <p>Título grande de la cabecera y el subtítulo en mayúsculas justo debajo. Aparecen en la pantalla de inicio y en el listado de rutas.</p>
+          <pre class="snippet">"siteTitle": <span class="str">"Les teves rutes"</span>,
+"orgTagline": <span class="str">"ESPORT &amp; NATURA"</span></pre>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-label">Cabecera — pantalla de inicio</div>
+          <div class="mockup app app-light">
+            <div class="app-header">
+              <div>
+                <div class="title">Club Esportiu Castelldans<span class="callout" style="position:static;display:inline-flex;margin-left:6px;transform:translateY(-2px);">1</span></div>
+                <div class="tagline">ESPORT &amp; NATURA <span class="callout" style="position:static;display:inline-flex;margin-left:4px;transform:translateY(-2px);">2</span></div>
+              </div>
+              <div class="app-toggle">☀︎</div>
+            </div>
+            <div class="app-banner"><div class="btitle">L'any 2013...</div></div>
+          </div>
+          <div class="legend">
+            <div class="row"><span class="num">1</span> nota: el título grande en pantalla lo pone <code class="mono">orgName</code>, no <code class="mono">siteTitle</code> — este último se usa como título de la pestaña del listado de rutas.</div>
+            <div class="row"><span class="num">2</span> <code class="mono">orgTagline</code></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-copy">
+          <h3><span class="key">contactEmail</span> <span class="key">copyrightText</span> <span class="type-pill">string</span></h3>
+          <p>El email se muestra como enlace <code>mailto:</code> en el pie de página. El texto de copyright va en la última línea del footer; si no lo defines, se usa <code>© {año actual} {siteTitle}</code> automáticamente.</p>
+          <pre class="snippet">"contactEmail": <span class="str">"cecastelldans@gmail.com"</span>,
+"copyrightText": <span class="str">"©2025 Club Esportiu Castelldans."</span></pre>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-label">Pie de página</div>
+          <div class="mockup app app-light" style="position:relative;">
+            <div class="app-footer" style="margin:14px;">
+              <div class="cols">
+                <div style="flex:1;">
+                  <div class="col-title">En vols dir alguna cosa?</div>
+                  <div class="link" style="position:relative;">cecastelldans@gmail.com<span class="callout" style="position:absolute; right:-26px; top:-2px;">1</span></div>
+                </div>
+              </div>
+              <hr />
+              <div class="copy" style="position:relative;">©2025 Club Esportiu Castelldans.<span class="callout" style="position:absolute; right:-26px; top:-2px;">2</span></div>
+            </div>
+          </div>
+          <div class="legend">
+            <div class="row"><span class="num">1</span> <code class="mono">contactEmail</code></div>
+            <div class="row"><span class="num">2</span> <code class="mono">copyrightText</code></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" id="sponsors-toggle">
+        <div class="field-copy">
+          <h3><span class="key">showSponsors</span> <span class="type-pill">boolean</span></h3>
+          <p>Interruptor general: oculta o muestra toda la sección de patrocinadores sin borrar la lista de <code class="mono">sponsors</code>. Por defecto es <code>true</code>.</p>
+          <pre class="snippet">"showSponsors": <span style="color:#a8763c;">false</span></pre>
+          <p class="also">Con <code>sponsors: []</code> vacío pasa lo mismo automáticamente — este campo es para ocultarlos temporalmente sin tocar la lista.</p>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-label">showSponsors: true → false</div>
+          <div style="display:flex; gap:8px;">
+            <div class="mockup app app-light" style="flex:1;">
+              <div class="app-sponsors">
+                <div class="col-title">Patrocinadors</div>
+                <div class="grid"><div class="tile"></div><div class="tile"></div><div class="tile"></div><div class="tile"></div></div>
+              </div>
+            </div>
+            <div class="mockup app app-light" style="flex:1; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:11px;">
+              (sección no existe)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" id="overrides" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3><span class="key">routeOverrides</span> <span class="type-pill">object</span></h3>
+          <p>Corrige a mano cualquier dato calculado automáticamente para una ruta concreta: nombre, ubicación, dificultad, duración, distancia, desnivel, altitudes, TrailRank o tipo de recorrido. Se indexa por el mismo <code>"file"</code> que aparece en <code>manifest.json</code>. Todos los campos son opcionales — pon solo los que necesites.</p>
+        </div>
+
+        <div style="display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); gap:28px; margin-top:20px;">
+          <div>
+            <div class="mockup-label" style="margin-bottom:8px;">Ejemplo con los 11 campos a la vez</div>
+            <pre class="snippet" style="margin-top:0;">"routeOverrides": {
+  <span class="str">"ROAD/mi-ruta-nueva.gpx"</span>: {
+    <span class="str">"name"</span>: <span class="str">"Ruta del Pantà"</span>,
+    <span class="str">"location"</span>: <span class="str">"Castelldans"</span>,
+    <span class="str">"difficulty"</span>: <span class="str">"dificil"</span>,
+    <span class="str">"duration"</span>: <span class="str">"4h 15m"</span>,
+    <span class="str">"distanceKm"</span>: <span class="num">68.4</span>,
+    <span class="str">"elevGain"</span>: <span class="num">1450</span>,
+    <span class="str">"elevLoss"</span>: <span class="num">1450</span>,
+    <span class="str">"maxAlt"</span>: <span class="num">512</span>,
+    <span class="str">"minAlt"</span>: <span class="num">210</span>,
+    <span class="str">"trailRank"</span>: <span class="num">62</span>,
+    <span class="str">"routeShape"</span>: <span class="str">"Circular"</span>
+  }
+}</pre>
+            <p class="also">En el día a día casi nunca rellenas los 11 a la vez — normalmente uno o dos. Aquí van todos juntos solo para ver cada clave en su sitio.</p>
+          </div>
+
+          <div class="mockup-wrap">
+            <div class="mockup-label">Así se ve el detalle de la ruta con ese override aplicado</div>
+            <div class="mockup app app-light">
+              <div class="app-detail-head" style="position:relative;">
+                <div class="name">Ruta del Pantà<span class="callout" style="position:absolute; top:10px; left:118px;">1</span></div>
+                <div class="loc" style="position:relative;">Castelldans<span class="callout" style="position:absolute; top:-2px; left:64px;">2</span></div>
+              </div>
+              <div class="app-detail-stats">
+                <div class="app-stat-tile" style="position:relative;"><div class="lbl">Distància</div><div class="val">68.4 km</div><span class="callout" style="position:absolute; top:-6px; right:-6px;">3</span></div>
+                <div class="app-stat-tile" style="position:relative;"><div class="lbl">Desnivell +</div><div class="val">+1450 m</div><span class="callout" style="position:absolute; top:-6px; right:-6px;">4</span></div>
+                <div class="app-stat-tile" style="position:relative;"><div class="lbl">Durada</div><div class="val">4h 15m</div><span class="callout" style="position:absolute; top:-6px; right:-6px;">5</span></div>
+                <div class="app-stat-tile" style="position:relative; background:#fef9c3;"><div class="lbl" style="color:#854d0e; opacity:.8;">Dificultat</div><div class="val" style="color:#854d0e;">Difícil</div><span class="callout" style="position:absolute; top:-6px; right:-6px;">6</span></div>
+              </div>
+              <div class="app-detail-card">
+                <div class="app-detail-row" style="position:relative;"><span class="lbl">Tipus de ruta</span><span class="val">Circular</span><span class="callout" style="position:absolute; top:5px; right:-6px;">7</span></div>
+                <div class="app-detail-row" style="position:relative;"><span class="lbl">Desnivell negatiu</span><span class="val">1450 m</span><span class="callout" style="position:absolute; top:5px; right:-6px;">8</span></div>
+                <div class="app-detail-row" style="position:relative;"><span class="lbl">Altitud màxima</span><span class="val">512 m</span><span class="callout" style="position:absolute; top:5px; right:-6px;">9</span></div>
+                <div class="app-detail-row" style="position:relative;"><span class="lbl">Altitud mínima</span><span class="val">210 m</span><span class="callout" style="position:absolute; top:5px; right:-6px;">10</span></div>
+                <div class="app-detail-row" style="position:relative;"><span class="lbl">TrailRank</span><span class="val">62</span><span class="callout" style="position:absolute; top:5px; right:-6px;">11</span></div>
+              </div>
+            </div>
+            <div class="legend">
+              <div class="row"><span class="num">1</span> <code class="mono">name</code></div>
+              <div class="row"><span class="num">2</span> <code class="mono">location</code></div>
+              <div class="row"><span class="num">3</span> <code class="mono">distanceKm</code></div>
+              <div class="row"><span class="num">4</span> <code class="mono">elevGain</code></div>
+              <div class="row"><span class="num">5</span> <code class="mono">duration</code></div>
+              <div class="row"><span class="num">6</span> <code class="mono">difficulty</code></div>
+              <div class="row"><span class="num">7</span> <code class="mono">routeShape</code></div>
+              <div class="row"><span class="num">8</span> <code class="mono">elevLoss</code></div>
+              <div class="row"><span class="num">9</span> <code class="mono">maxAlt</code></div>
+              <div class="row"><span class="num">10</span> <code class="mono">minAlt</code></div>
+              <div class="row"><span class="num">11</span> <code class="mono">trailRank</code></div>
+            </div>
+          </div>
+        </div>
+        <div class="note-box">
+          El paso a paso de cómo editar <code>config.json</code> desde el navegador de GitHub (sin saber Git) está en la sección <a href="#corregir-dato">Corregir un dato a mano</a>, al principio de esta página.
+        </div>
+      </div>
+
+      <div class="field" id="filtros">
+        <div class="field-copy">
+          <h3><span class="key">filters</span> <span class="type-pill">object</span></h3>
+          <p><code class="mono">trackTypes</code> fija el orden de los chips de filtro (los tipos detectados que no estén en la lista se añaden al final, ordenados alfabéticamente). <code class="mono">difficultyLabels</code> traduce las claves internas a texto visible. <code class="mono">distanceBuckets</code> / <code class="mono">elevationBuckets</code> definen los rangos del panel "Més filtres".</p>
+          <pre class="snippet">"trackTypes": [<span class="str">"ROAD"</span>, <span class="str">"GRAVEL"</span>, <span class="str">"TRAIL"</span>],
+"difficultyLabels": { <span class="str">"dificil"</span>: <span class="str">"Difícil"</span> }</pre>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-label">Fila de chips — orden = orden de la lista</div>
+          <div class="mockup app app-light" style="padding-top:10px;">
+            <div class="app-chips">
+              <div class="app-chip active">Tots</div>
+              <div class="app-chip" style="position:relative;">ROAD<span class="callout" style="position:absolute; top:-10px; right:-6px;">1</span></div>
+              <div class="app-chip">GRAVEL</div>
+              <div class="app-chip">TRAIL</div>
+            </div>
+          </div>
+          <div class="legend">
+            <div class="row"><span class="num">1</span> orden tomado de <code class="mono">trackTypes</code></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" id="social">
+        <div class="field-copy">
+          <h3><span class="key">social</span> <span class="type-pill">array</span></h3>
+          <p>Iconos circulares en el footer. Cada entrada es una red + su URL. Una red no reconocida cae a un icono genérico de web.</p>
+          <pre class="snippet">"social": [
+  { <span class="str">"network"</span>: <span class="str">"instagram"</span>, <span class="str">"url"</span>: <span class="str">"https://instagram.com/..."</span> }
+]</pre>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-label">Footer — "Segueix-nos"</div>
+          <div class="mockup app app-light">
+            <div class="app-footer" style="margin:14px; position:relative;">
+              <div class="col-title">Segueix-nos</div>
+              <div class="social"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+              <span class="callout" style="position:absolute; top:24px; right:14px;">1</span>
+            </div>
+          </div>
+          <div class="legend"><div class="row"><span class="num">1</span> un círculo por cada entrada de <code class="mono">social</code>, en el mismo orden</div></div>
+        </div>
+      </div>
+
+      <div class="field" id="secciones">
+        <div class="field-copy">
+          <h3><span class="key">sections</span> <span class="type-pill">array</span></h3>
+          <p>Bloques de tipo <code>"banner"</code> (imagen + título + texto + enlace, arriba de la pantalla de inicio) o <code>"link"</code> (fila de enlace rápido en "Enllaços" del footer).</p>
+          <pre class="snippet">{ <span class="str">"type"</span>: <span class="str">"banner"</span>, <span class="str">"title"</span>: <span class="str">"..."</span>, <span class="str">"linkLabel"</span>: <span class="str">"Vols venir?"</span> }
+{ <span class="str">"type"</span>: <span class="str">"link"</span>, <span class="str">"label"</span>: <span class="str">"Botiga"</span>, <span class="str">"url"</span>: <span class="str">"..."</span> }</pre>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-label">banner (inicio) + link (footer)</div>
+          <div class="mockup app app-light">
+            <div class="app-banner" style="margin:14px; position:relative;">
+              <div class="btitle">Club Esportiu Castelldans</div>
+              <div class="bbody">L'any 2013 un grup d'apassionats...</div>
+              <div class="blink">Vols venir? ↗</div>
+              <span class="callout" style="position:absolute; top:8px; right:-8px;">1</span>
+            </div>
+            <div class="app-footer" style="margin:14px; position:relative;">
+              <div class="col-title">Enllaços</div>
+              <div class="link">Botiga ↗</div>
+              <span class="callout" style="position:absolute; top:24px; right:14px;">2</span>
+            </div>
+          </div>
+          <div class="legend">
+            <div class="row"><span class="num">1</span> sección tipo <code class="mono">banner</code></div>
+            <div class="row"><span class="num">2</span> sección tipo <code class="mono">link</code></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= rutas/theme.json ================= -->
+    <section class="file-section" id="theme">
+      <h2 class="file-title"><span class="dot"></span>rutas/theme.json</h2>
+      <p class="file-note">Paleta de colores de toda la app, en dos variantes (<code>light</code> / <code>dark</code>). Debe reflejar exactamente los valores por defecto ya escritos en <code>index.html</code> — si difieren, este archivo gana en tiempo de ejecución.</p>
+
+      <div class="field" id="tema-modelo">
+        <div class="field-copy">
+          <h3>Cómo funciona</h3>
+          <p>No son 40 colores sueltos: son <strong>12 "tokens"</strong> con nombre (<code class="mono">primary</code>, <code class="mono">accent</code>, <code class="mono">destructive</code>...) que luego la app combina para pintar botones, chips, badges, bordes, etc. Cambiar un token cambia todos los sitios que lo usan a la vez.</p>
+        </div>
+        <div class="mockup-wrap">
+          <div class="mockup-label">Un token, muchos usos</div>
+          <div class="mockup app app-light" style="padding: 14px; display:flex; align-items:center; gap:10px; font-size:11px;">
+            <div class="app-chip active" style="position:static;">chip</div>
+            <div class="app-card" style="margin:0; width:60px;"><div class="type-badge" style="position:static; display:inline-block;">badge</div></div>
+            <div style="background:#2563eb; color:#fff; padding:6px 12px; border-radius:8px; font-weight:700;">botón</div>
+            <span style="color:var(--ink-faint);">← todos usan <code class="mono">primary</code></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" id="tema-tokens" style="display:block;">
+        <div class="field-copy" style="max-width: none;">
+          <h3>Los 12 tokens, claro y oscuro</h3>
+          <p>Valores actuales de <code>rutas/theme.json</code>. Cada par de franjas es claro (izquierda) / oscuro (derecha).</p>
+        </div>
+        <div class="swatch-grid">
+          <div class="swatch"><div class="pair"><div style="background:#ffffff;"></div><div style="background:#0f172a;"></div></div><div class="meta"><div class="k">background</div><div class="u">fondo de pantalla</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#0f172a;"></div><div style="background:#f8fafc;"></div></div><div class="meta"><div class="k">foreground</div><div class="u">texto principal</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#ffffff;"></div><div style="background:#1e293b;"></div></div><div class="meta"><div class="k">card</div><div class="u">fondo de tarjetas</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#2563eb;"></div><div style="background:#2563eb;"></div></div><div class="meta"><div class="k">primary</div><div class="u">botones, chip activo, badge de tipo</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#ffffff;"></div><div style="background:#ffffff;"></div></div><div class="meta"><div class="k">primaryForeground</div><div class="u">texto sobre primary</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#f1f5f9;"></div><div style="background:#1e293b;"></div></div><div class="meta"><div class="k">muted</div><div class="u">chip inactivo, badge "Fàcil"</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#64748b;"></div><div style="background:#94a3b8;"></div></div><div class="meta"><div class="k">mutedForeground</div><div class="u">texto secundario</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#fef9c3;"></div><div style="background:#1e3a8a;"></div></div><div class="meta"><div class="k">accent</div><div class="u">banner, mapa de la tarjeta, badge "Difícil"</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#854d0e;"></div><div style="background:#fde68a;"></div></div><div class="meta"><div class="k">accentForeground</div><div class="u">texto sobre accent, enlaces</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#dc2626;"></div><div style="background:#7f1d1d;"></div></div><div class="meta"><div class="k">destructive</div><div class="u">badge "Molt difícil"</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#ffffff;"></div><div style="background:#f8fafc;"></div></div><div class="meta"><div class="k">destructiveForeground</div><div class="u">texto sobre destructive</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#e2e8f0;"></div><div style="background:#334155;"></div></div><div class="meta"><div class="k">border</div><div class="u">bordes de tarjetas y footer</div></div></div>
+        </div>
+      </div>
+
+      <div class="field" id="tema-anotado" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3>Dónde aparece cada token en la tarjeta de una ruta</h3>
+          <p>Mismo componente, en claro y en oscuro.</p>
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top: 10px;">
+          <div class="mockup-wrap" style="flex:1; min-width:260px;">
+            <div class="mockup-label">Claro</div>
+            <div class="mockup app app-light">
+              <div class="app-card" style="margin:14px; position:relative;">
+                <div class="hero">
+                  <div class="type-badge">ROAD<span class="callout" style="position:absolute; top:-8px; left:44px;">1</span></div>
+                </div>
+                <div class="body">
+                  <div class="row1">
+                    <div><div class="name">RC23 Road Llarga</div><div class="loc">Juncosa</div></div>
+                    <div class="diff" style="background:#fef9c3;color:#854d0e;position:relative;">Difícil<span class="callout" style="position:absolute; top:-8px; right:-8px;">2</span></div>
+                  </div>
+                  <div class="stats" style="position:relative;">
+                    <div><b>150.7</b> km</div><div><b>+3858</b> m</div><div><b>12h33</b></div>
+                    <span class="callout" style="position:absolute; bottom:-6px; right:30%;">3</span>
+                  </div>
+                </div>
+                <span class="callout" style="position:absolute; top:6px; right:6px; background:transparent; box-shadow:none; color:var(--ink-faint); font-size:9px;"></span>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-wrap" style="flex:1; min-width:260px;">
+            <div class="mockup-label">Oscuro</div>
+            <div class="mockup app app-dark">
+              <div class="app-card" style="margin:14px; position:relative;">
+                <div class="hero">
+                  <div class="type-badge">ROAD</div>
+                </div>
+                <div class="body">
+                  <div class="row1">
+                    <div><div class="name">RC23 Road Llarga</div><div class="loc">Juncosa</div></div>
+                    <div class="diff" style="background:#1e3a8a;color:#fde68a;">Difícil</div>
+                  </div>
+                  <div class="stats"><div><b>150.7</b> km</div><div><b>+3858</b> m</div><div><b>12h33</b></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="legend" style="margin-top:14px;">
+          <div class="row"><span class="num">1</span> badge de tipo = <code class="mono">primary</code> / <code class="mono">primaryForeground</code></div>
+          <div class="row"><span class="num">2</span> badge "Difícil" = <code class="mono">accent</code> / <code class="mono">accentForeground</code> · "Molt difícil" usaría <code class="mono">destructive</code> · "Fàcil" usaría <code class="mono">muted</code></div>
+          <div class="row"><span class="num">3</span> borde de la tarjeta = <code class="mono">border</code> · fondo = <code class="mono">card</code> · texto = <code class="mono">foreground</code> / <code class="mono">mutedForeground</code></div>
+        </div>
+        <div class="note-box">
+          <strong>Regla de contraste:</strong> cualquier par bg/texto debe llegar a 4.5:1 (WCAG AA) para texto normal. Antes de cambiar un token, comprueba el contraste del nuevo color contra su pareja — varias paletas pegadas en este proyecto han fallado aquí (rojo claro + texto blanco, azul claro + texto blanco) y hubo que oscurecerlas un paso.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= manifest.json ================= -->
+    <section class="file-section" id="manifest" style="margin-bottom:0;">
+      <h2 class="file-title"><span class="dot"></span>rutas/manifest.json</h2>
+      <p class="file-note">Este no se edita nunca a mano: se regenera automáticamente en cada despliegue a partir de los archivos <code>.gpx</code> que haya dentro de <code>rutas/&lt;TIPO&gt;/</code>. Cualquier cambio manual se pierde en el siguiente push.</p>
+      <p class="file-note" style="margin-bottom:0;"><strong style="color:var(--ink);">El tipo (<code>ROAD</code>, <code>GRAVEL</code>...) tampoco es una lista fija</strong>: es, literalmente, el nombre de cada carpeta que hay dentro de <code>rutas/</code>. Crear una carpeta nueva y subir un <code>.gpx</code> dentro basta para que aparezca un filtro nuevo en la web, sin tocar ningún archivo. Paso a paso en la sección <a href="#anadir-tipo">Añadir un tipo de ruta completamente nuevo</a>, al principio de esta página.</p>
+    </section>
+
+    <footer class="end">
+      <a href="#guia">↑ Volver a la guía rápida</a>
+    </footer>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var STORAGE_KEY = 'manualTheme';
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+
+    function isDark() {
+      var forced = root.getAttribute('data-theme');
+      if (forced === 'dark') return true;
+      if (forced === 'light') return false;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function paint() {
+      if (isDark()) {
+        btn.textContent = '☾';
+        btn.setAttribute('aria-label', 'Cambiar a modo claro');
+      } else {
+        btn.textContent = '☀︎';
+        btn.setAttribute('aria-label', 'Cambiar a modo oscuro');
+      }
+    }
+
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+    paint();
+
+    btn.addEventListener('click', function () {
+      var next = isDark() ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem(STORAGE_KEY, next);
+      paint();
+    });
+  })();
+</script>

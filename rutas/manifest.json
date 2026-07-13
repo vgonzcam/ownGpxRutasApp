@@ -1,5 +1,33 @@
 [
   {
+    "file": "BIKEPACKING/bikepacking-experience-rural-cycling-235k.gpx",
+    "type": "BIKEPACKING"
+  },
+  {
+    "file": "CASTELLBIKE/castellbike-2022-curt.gpx",
+    "type": "CASTELLBIKE"
+  },
+  {
+    "file": "CASTELLBIKE/castellbike-2022-llarg.gpx",
+    "type": "CASTELLBIKE"
+  },
+  {
+    "file": "CASTELLBIKE/open-maxxis-castelldans-llarg-2026.gpx",
+    "type": "CASTELLBIKE"
+  },
+  {
+    "file": "GRAVEL/gravel-maxxis-curt-25.gpx",
+    "type": "GRAVEL"
+  },
+  {
+    "file": "GRAVEL/gravel-popular-24k.gpx",
+    "type": "GRAVEL"
+  },
+  {
+    "file": "GRAVEL/rc24-gravel-140k.gpx",
+    "type": "GRAVEL"
+  },
+  {
     "file": "ROAD/rc23-road-llarga-150k.gpx",
     "type": "ROAD"
   },
@@ -16,39 +44,11 @@
     "type": "ROAD"
   },
   {
-    "file": "GRAVEL/gravel-maxxis-curt-25.gpx",
-    "type": "GRAVEL"
-  },
-  {
-    "file": "GRAVEL/gravel-popular-24k.gpx",
-    "type": "GRAVEL"
-  },
-  {
-    "file": "GRAVEL/rc24-gravel-140k.gpx",
-    "type": "GRAVEL"
-  },
-  {
     "file": "TRAIL/lo-timorell-easy.gpx",
     "type": "TRAIL"
   },
   {
     "file": "TRAIL/pins-del-miquelo-medium.gpx",
     "type": "TRAIL"
-  },
-  {
-    "file": "BIKEPACKING/bikepacking-experience-rural-cycling-235k.gpx",
-    "type": "BIKEPACKING"
-  },
-  {
-    "file": "CASTELLBIKE/castellbike-2022-curt.gpx",
-    "type": "CASTELLBIKE"
-  },
-  {
-    "file": "CASTELLBIKE/castellbike-2022-llarg.gpx",
-    "type": "CASTELLBIKE"
-  },
-  {
-    "file": "CASTELLBIKE/open-maxxis-castelldans-llarg-2026.gpx",
-    "type": "CASTELLBIKE"
   }
 ]

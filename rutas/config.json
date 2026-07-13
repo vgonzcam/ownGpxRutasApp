@@ -4,11 +4,12 @@
   "orgTagline": "ESPORT & NATURA",
   "contactEmail": "cecastelldans@gmail.com",
   "copyrightText": "©2025 Club Esportiu Castelldans.",
-  "difficultyOverrides": {
-    "CASTELLBIKE/open-maxxis-castelldans-llarg-2026.gpx": "dificil"
-  },
-  "durationOverrides": {
-    "CASTELLBIKE/open-maxxis-castelldans-llarg-2026.gpx": "5h 30m"
+  "showSponsors": false,
+  "routeOverrides": {
+    "CASTELLBIKE/open-maxxis-castelldans-llarg-2026.gpx": {
+      "difficulty": "dificil",
+      "duration": "5h 30m"
+    }
   },
   "filters": {
     "trackTypes": [
@@ -70,7 +71,6 @@
   "sections": [
     {
       "type": "banner",
-      "image": "club.avif",
       "title": "Club Esportiu Castelldans",
       "body": "L'any 2013 un grup d'apassionats per l'esport es van reunir per formar el Club Esportiu Castelldans. Bons coneixedors de Les Garrigues, zona amb infinitats de camins i corriols, petites valls que fan que tinguem un territori brutal per practicar el que més ens agrada.\n\nJa han passat més de 10 anys i som aquí per oferir-vos TOT el que tenim al pati de casa nostra.",
       "linkLabel": "Vols venir?",

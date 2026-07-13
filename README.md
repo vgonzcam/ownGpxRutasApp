@@ -1,5 +1,16 @@
 # Rutas GPX — Club Esportiu Castelldans
 
+## Documentación
+
+| Documento | Qué explica | Dónde verlo |
+|---|---|---|
+| `README.md` | Correr en local, estructura del proyecto, cómo configurar `rutas/config.json`, despliegue | Este mismo archivo |
+| Manual de rutas y configuración | Guía rápida (añadir una ruta, añadir un tipo nuevo, corregir datos a mano) + referencia campo a campo de `rutas/config.json` y `rutas/theme.json` con miniaturas de la app | [vgonzcam.github.io/ownGpxRutasApp/MANUAL-CONFIGURACION.html](https://vgonzcam.github.io/ownGpxRutasApp/MANUAL-CONFIGURACION.html) (tras el próximo deploy) |
+| [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md) | Redirige al manual de arriba — por si navegas el repo sin tener la web desplegada | [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md) en este repo |
+| La app | La web de rutas en sí | [vgonzcam.github.io/ownGpxRutasApp](https://vgonzcam.github.io/ownGpxRutasApp/) |
+
+Las dos últimas filas son páginas del propio sitio (GitHub Pages), no archivos que se abran desde el repositorio.
+
 ## Cómo correrlo en local
 
 Este proyecto hace `fetch()` de archivos locales, así que **no lo abras con doble clic** (file://) — el navegador bloquea esas peticiones. Sírvelo con Node:
@@ -31,29 +42,31 @@ El service worker només funciona servit per http(s) (no amb file://), i cada ru
 2. Haz `git push`. Nada más — `rutas/manifest.json` se regenera solo en cada despliegue (ver más abajo), no lo edites a mano.
 3. El nombre y ubicación de la ruta se toman del tag `<name>` del GPX, en formato `Nombre, Ubicación`. Distancia, desnivel, duración y dificultad se calculan automáticamente a partir de los puntos del track.
 
-### Corregir la dificultad a mano
+### Corregir los datos de una ruta a mano
 
-La dificultad se calcula solo a partir del desnivel por km (no tiene en cuenta distancia total ni terreno técnico), así que a veces no acierta. Si quieres fijarla tú, añade una entrada en `rutas/config.json` → `difficultyOverrides`, usando la misma ruta de archivo que aparece en `manifest.json`:
+Distancia, desnivell, duración, dificultad, etc. se calculan por fórmula a partir de los puntos del GPX, así que a veces no aciertan (no tienen en cuenta terreno técnico, paradas, etc.). Para fijar a mano cualquiera de estos valores en una ruta concreta, añade una entrada en `rutas/config.json` → `routeOverrides`, usando la misma ruta de archivo que aparece en `manifest.json`. Solo hace falta incluir los campos que quieras sobrescribir:
 
 ```json
-"difficultyOverrides": {
-  "ROAD/rc23-road-llarga-150k.gpx": "dificil"
+"routeOverrides": {
+  "ROAD/rc23-road-llarga-150k.gpx": {
+    "name": "RC23 Road Llarga",
+    "location": "Juncosa",
+    "difficulty": "dificil",
+    "duration": "5h 30m",
+    "distanceKm": 152,
+    "elevGain": 3900,
+    "elevLoss": 3900,
+    "maxAlt": 790,
+    "minAlt": 85,
+    "trailRank": 95,
+    "routeShape": "Circular"
+  }
 }
 ```
 
-Valores posibles: `"facil"`, `"dificil"`, `"moltDificil"`. Este archivo **no** se regenera automáticamente (a diferencia de `manifest.json`), así que los cambios se quedan aunque hagas push de nuevas rutas.
+Explicación campo a campo (cómo se calcula cada uno y qué pasa si lo sobrescribes) en el [manual de rutas y configuración](https://vgonzcam.github.io/ownGpxRutasApp/MANUAL-CONFIGURACION.html).
 
-### Corregir la duración estimada a mano
-
-Igual que la dificultad, la duración es una estimación por fórmula (no personalizada, no cuenta paradas). Para fijarla a mano, añade una entrada en `rutas/config.json` → `durationOverrides`, con el texto exacto que quieres que se muestre:
-
-```json
-"durationOverrides": {
-  "ROAD/rc23-road-llarga-150k.gpx": "5h 30m"
-}
-```
-
-Igual que `difficultyOverrides`, esta clave tiene que coincidir con el `"file"` de `manifest.json`, y el archivo no se regenera solo.
+Todos los campos son opcionales — pon solo los que quieras corregir. `difficulty` acepta `"facil"`, `"dificil"` o `"moltDificil"`; `routeShape` acepta `"Circular"` o `"Lineal"`. Esta clave tiene que coincidir con el `"file"` de `manifest.json`. El archivo `config.json` **no** se regenera automáticamente (a diferencia de `manifest.json`), así que los cambios se quedan aunque hagas push de nuevas rutas.
 
 Si quieres comprobar en local qué manifest se generaría antes de hacer push:
 
@@ -69,6 +82,7 @@ node scripts/build-manifest.js
 - `sections` — bloques tipo `banner` (imagen/título + subtítulo + texto + enlace, se muestra arriba) o `link` (aparece como enlace rápido en el footer).
   - El banner admite `image` (nombre de archivo dentro de `imgs/`, p.ej. `"image": "club.avif"`); si no se define o falla al cargar, se muestra `title` en texto.
 - `social` — redes sociales, cada una `{ "network": "instagram" | "x" | "facebook" | "strava" | "youtube", "url": "..." }`. Se muestran como iconos circulares en el footer; una red no reconocida cae a un icono genérico.
+- `showSponsors` — `true`/`false` (por defecto `true`). Ponlo en `false` para ocultar del todo la sección de patrocinadores sin tener que borrar la lista de `sponsors`.
 - `sponsors` — cada uno `{ "name": "...", "url": "...", "logo": "archivo.png" }`. El campo `logo` es opcional: si lo pones, coloca la imagen en `imgs/`; si no existe o falla al cargar, se muestra el nombre en texto automáticamente.
 
 Todas las imágenes (logo del club, logos de patrocinadores) se guardan en la carpeta `imgs/` en la raíz del proyecto, y se referencian en `config.json` solo por nombre de archivo.

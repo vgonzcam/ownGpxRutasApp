@@ -108,6 +108,17 @@
       .back-label {
         display: none;
       }
+      .header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        background: var(--bar-bg);
+        border: 1px solid var(--bar-border);
+        border-radius: 20px;
+        padding: 10px 14px;
+        box-shadow: var(--bar-shadow);
+      }
       @media (min-width: 560px) {
         .back-btn {
           width: auto;
@@ -117,6 +128,13 @@
         }
         .back-label {
           display: inline;
+        }
+        .header-bar {
+          background: none;
+          border: none;
+          box-shadow: none;
+          padding: 0;
+          border-radius: 0;
         }
       }
       @media (min-width: 560px) {
@@ -660,10 +678,8 @@
             return;
           }
           const routes = [];
-          const difficultyOverrides =
-            (state.config && state.config.difficultyOverrides) || {};
-          const durationOverrides =
-            (state.config && state.config.durationOverrides) || {};
+          const routeOverrides =
+            (state.config && state.config.routeOverrides) || {};
           for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
             const filename = typeof entry === "string" ? entry : entry.file;
@@ -673,10 +689,20 @@
             const text = await res.text();
             const route = parseGpx(text, i + 1, trackType);
             if (route) {
-              if (difficultyOverrides[filename])
-                route.diffKey = difficultyOverrides[filename];
-              if (durationOverrides[filename])
-                route.duration = durationOverrides[filename];
+              const ov = routeOverrides[filename];
+              if (ov) {
+                if (ov.name) route.name = ov.name;
+                if (ov.location) route.location = ov.location;
+                if (ov.difficulty) route.diffKey = ov.difficulty;
+                if (ov.duration) route.duration = ov.duration;
+                if (ov.distanceKm != null) route.distanceKm = ov.distanceKm;
+                if (ov.elevGain != null) route.elevGain = ov.elevGain;
+                if (ov.elevLoss != null) route.elevLoss = ov.elevLoss;
+                if (ov.maxAlt != null) route.maxAlt = ov.maxAlt;
+                if (ov.minAlt != null) route.minAlt = ov.minAlt;
+                if (ov.trailRank != null) route.trailRank = ov.trailRank;
+                if (ov.routeShape) route.routeShape = ov.routeShape;
+              }
               routes.push(route);
             }
           }
@@ -813,9 +839,14 @@
             ? `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="${theme.textPrimary}" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"></path></svg>`
             : `<svg viewBox="0 0 24 24" width="18" height="18" fill="${theme.textPrimary}"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"></path></svg>`;
         const themeToggleHtml = `<div id="themeToggle" title="Canvia el tema" style="cursor:pointer;flex-shrink:0;width:40px;height:40px;border-radius:50%;background:${theme.chipBg};display:flex;align-items:center;justify-content:center;">${themeIconHtml}</div>`;
+        const logoToggleHtml = `<div style="display:flex;align-items:center;gap:20px;flex-shrink:0;"><img src="imgs/club.avif" alt="${orgName}" style="max-height:56px;max-width:100%;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none';">${themeToggleHtml}</div>`;
+        const logoToggleHtmlCompact = `<div style="display:flex;align-items:center;gap:14px;flex-shrink:0;"><img src="imgs/club.avif" alt="${orgName}" style="height:40px;width:auto;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none';">${themeToggleHtml}</div>`;
 
         const sections = (state.config && state.config.sections) || [];
-        const sponsors = (state.config && state.config.sponsors) || [];
+        const showSponsors = !(state.config && state.config.showSponsors === false);
+        const sponsors = showSponsors
+          ? (state.config && state.config.sponsors) || []
+          : [];
         const social = (state.config && state.config.social) || [];
         const quickLinks = sections.filter((s) => s.type === "link");
         const footerBg = theme.cardBg;
@@ -921,7 +952,7 @@
             <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:${theme.textPrimary};line-height:1.2;">${orgName}</div>
             <div style="font-size:12px;font-weight:600;letter-spacing:0.08em;color:${theme.textTertiary};">${orgTagline}</div>
           </div>
-          ${themeToggleHtml}
+          ${logoToggleHtml}
         </div>
         ${installBannerHtml}
         ${bannerHtml}
@@ -1068,12 +1099,12 @@
 
           app.innerHTML = `<div class="screen" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding:calc(28px + env(safe-area-inset-top)) 24px 40px 24px;">
       <div class="container-wide">
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:4px;">
-          <div id="backHomeBtn" class="back-btn" style="cursor:pointer;flex-shrink:0;height:38px;background:${theme.cardBg};border:1px solid ${theme.border};display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;">Inici</span></div>
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:${theme.textPrimary};flex:1;">${siteTitle}</div>
-          ${themeToggleHtml}
+        <div class="header-bar" style="margin-bottom:14px;--bar-bg:${theme.cardBg};--bar-border:${theme.border};--bar-shadow:${theme.shadowCard};">
+          <div id="backHomeBtn" class="back-btn" style="cursor:pointer;flex-shrink:0;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;">Inici</span></div>
+          ${logoToggleHtmlCompact}
         </div>
-        <div style="font-size:14px;color:${theme.textSecondary};margin:8px 0 18px 0;">${decorated.length} ${decorated.length === 1 ? "ruta carregada" : "rutes carregades"}</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:${theme.textPrimary};margin-bottom:4px;">${siteTitle}</div>
+        <div style="font-size:14px;color:${theme.textSecondary};margin:0 0 18px 0;">${decorated.length} ${decorated.length === 1 ? "ruta carregada" : "rutes carregades"}</div>
         <input id="searchInput" type="text" placeholder="Cerca per nom o ubicació…" value="${state.searchText.replace(/"/g, "&quot;")}" style="width:100%;box-sizing:border-box;padding:11px 14px;border-radius:12px;border:1px solid ${theme.border};background:${theme.cardBg};color:${theme.textPrimary};font-size:14px;font-family:inherit;margin-bottom:14px;outline:none;--ph-color:${theme.textTertiary};" />
         <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px;">${chips}</div>
         <div id="moreFiltersToggle" style="cursor:pointer;font-size:12px;font-weight:600;color:${theme.linkColor};margin-bottom:16px;">${state.moreFiltersOpen ? "Menys filtres ↑" : "Més filtres (dificultat, distància, desnivell) ↓"}</div>
@@ -1130,23 +1161,25 @@
         const chart = chartData(r.profile);
         app.innerHTML = `<div class="screen" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding-top:calc(20px + env(safe-area-inset-top));padding-bottom:32px;">
     <div class="container-narrow" style="padding:0 24px 20px 24px;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
-        <div id="backBtn" class="back-btn" style="cursor:pointer;flex-shrink:0;height:38px;background:${theme.cardBg};border:1px solid ${theme.border};display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;">Rutes</span></div>
-        <div style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:${theme.textPrimary};flex:1;">${r.name}</div>
-        ${themeToggleHtml}
+      <div class="header-bar" style="margin-bottom:8px;--bar-bg:${theme.cardBg};--bar-border:${theme.border};--bar-shadow:${theme.shadowCard};">
+        <div id="backBtn" class="back-btn" style="cursor:pointer;flex-shrink:0;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;">Rutes</span></div>
+        ${logoToggleHtmlCompact}
       </div>
-      <div style="font-size:14px;color:${theme.textSecondary};padding-left:52px;">${r.location}</div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:${theme.textPrimary};margin-bottom:2px;">${r.name}</div>
+      <div style="font-size:14px;color:${theme.textSecondary};">${r.location}</div>
     </div>
-    <div style="height:220px;position:relative;background:${theme.heroBg};">
-      <svg viewBox="0 0 300 130" preserveAspectRatio="none" style="width:100%;height:100%;display:block;">
-        <path d="${chart.areaPath}" fill="${theme.areaFill}" stroke="none"></path>
-        <polyline points="${chart.points}" fill="none" stroke="${theme.lineStroke}" stroke-width="2.5" vector-effect="non-scaling-stroke"></polyline>
-      </svg>
-      <div style="position:absolute;top:16px;left:24px;font-size:11px;font-weight:700;letter-spacing:0.04em;color:${theme.textSecondary};text-transform:uppercase;">Perfil de l'etapa</div>
-      <div style="position:absolute;bottom:16px;left:24px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:${theme.textSecondary};">${chart.min} m</div>
-      <div style="position:absolute;top:16px;right:24px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:${theme.textSecondary};">${chart.max} m</div>
+    <div class="container-narrow" style="padding:0 24px 20px 24px;">
+      <div style="height:220px;position:relative;background:${theme.cardBg};border-radius:20px;overflow:hidden;border:1px solid ${theme.border};box-shadow:${theme.shadowCard};">
+        <svg viewBox="0 0 300 130" preserveAspectRatio="none" style="width:100%;height:100%;display:block;">
+          <path d="${chart.areaPath}" fill="${theme.areaFill}" stroke="none"></path>
+          <polyline points="${chart.points}" fill="none" stroke="${theme.lineStroke}" stroke-width="2.5" vector-effect="non-scaling-stroke"></polyline>
+        </svg>
+        <div style="position:absolute;top:16px;left:24px;font-size:11px;font-weight:700;letter-spacing:0.04em;color:${theme.textSecondary};text-transform:uppercase;">Perfil de l'etapa</div>
+        <div style="position:absolute;bottom:16px;left:24px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:${theme.textSecondary};">${chart.min} m</div>
+        <div style="position:absolute;top:16px;right:24px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:${theme.textSecondary};">${chart.max} m</div>
+      </div>
     </div>
-    <div class="container-narrow" style="padding:24px;">
+    <div class="container-narrow" style="padding:0 24px 24px 24px;">
       <div style="font-size:13px;font-weight:600;color:${theme.textSecondary};text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;">Estadístiques de la ruta</div>
       <div class="stats-hero" style="margin-bottom:12px;">
         <div style="background:${theme.cardBg};border:1px solid ${theme.border};border-radius:16px;padding:16px;box-shadow:${theme.shadowCard};"><div style="font-size:12px;color:${theme.textSecondary};margin-bottom:6px;">Distància</div><div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:${theme.textPrimary};">${r.distanceKm} <span style="font-size:14px;font-weight:600;">km</span></div></div>
