@@ -358,17 +358,29 @@
 
   .prereq {
     list-style: none;
-    margin: 16px 0 0;
+    margin: 18px 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--ink-soft);
+    gap: 16px;
   }
-  .prereq li { display: flex; gap: 10px; }
-  .prereq li::before { content: '—'; color: var(--ink-faint); flex-shrink: 0; }
-  .prereq strong { color: var(--ink); }
+  .prereq li { display: flex; gap: 12px; align-items: flex-start; }
+  .prereq .icon {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--key-bg);
+    color: var(--key-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .prereq .label { font-weight: 700; color: var(--ink); font-size: 14.5px; margin-bottom: 3px; }
+  .prereq .desc { font-size: 13.5px; color: var(--ink-soft); }
+  .prereq .desc code { font-size: 12px; }
 
   ol.steps {
     list-style: none;
@@ -403,6 +415,27 @@
   table.calc-table td { color: var(--ink-soft); }
   table.calc-table td.field-name { color: var(--ink); font-weight: 600; white-space: nowrap; }
   table.calc-table td code { font-size: 11.5px; }
+  table.origin-table { min-width: 860px; }
+  table.origin-table col.col-campo { width: 19%; }
+  table.origin-table col.col-origen { width: 11%; }
+  table.origin-table col.col-gpx { width: 33%; }
+  table.origin-table col.col-json { width: 37%; }
+  table.origin-table td.dim { color: var(--ink-faint); font-style: italic; }
+
+  .origin-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .origin-gpx { background: var(--code-bg); color: var(--accent-ink); border-color: var(--accent-ink); }
+  .origin-json { background: var(--key-bg); color: var(--key-ink); }
+  .origin-fijo { background: var(--code-bg); color: var(--ink-faint); border-color: var(--line); }
+  .origin-arrow { color: var(--ink-faint); font-size: 11px; margin: 0 2px; }
 
   .guide-links {
     display: flex;
@@ -493,6 +526,12 @@
       <li><a href="#anadir-tipo">Añadir un tipo nuevo</a></li>
       <li><a href="#corregir-dato">Corregir un dato a mano</a></li>
     </ol>
+    <div class="file-label">Mapa de datos</div>
+    <ol>
+      <li><a href="#origen-inicio">Pantalla de inicio</a></li>
+      <li><a href="#origen-listado">Listado de rutas</a></li>
+      <li><a href="#origen-detalle">Detalle de ruta</a></li>
+    </ol>
     <div class="file-label">rutas/config.json</div>
     <ol>
       <li><a href="#identidad">Identidad del club</a></li>
@@ -530,9 +569,27 @@
         <div class="field-copy" style="max-width:none;">
           <h3 style="font-size:15px;">Antes de empezar</h3>
           <ul class="prereq">
-            <li><strong>Acceso a GitHub</strong> con permiso para subir archivos a este repositorio (si no lo tienes, pídeselo a quien mantiene la web — te tiene que añadir como colaborador).</li>
-            <li><strong>El archivo <code>.gpx</code></strong> de la ruta, exportado desde donde la hayáis grabado (Wikiloc, Strava, GPS del club, gpx.studio...).</li>
-            <li><strong>Saber de qué tipo es la ruta</strong> (<code>MTB</code>, <code>ROAD</code>, <code>GRAVEL</code>, <code>TRAIL</code>, <code>BIKEPACKING</code>, <code>CASTELLBIKE</code>...) — o crea uno nuevo si no encaja ninguno, ver más abajo.</li>
+            <li>
+              <span class="icon">✓</span>
+              <span>
+                <div class="label">Acceso a GitHub</div>
+                <div class="desc">Con permiso para subir archivos a este repositorio. Si no lo tienes, pídeselo a quien mantiene la web — te tiene que añadir como colaborador.</div>
+              </span>
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              <span>
+                <div class="label">El archivo <code>.gpx</code> de la ruta</div>
+                <div class="desc">Exportado desde donde la hayáis grabado (Wikiloc, Strava, GPS del club, gpx.studio...).</div>
+              </span>
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              <span>
+                <div class="label">Saber de qué tipo es la ruta</div>
+                <div class="desc"><code>MTB</code>, <code>ROAD</code>, <code>GRAVEL</code>, <code>TRAIL</code>, <code>BIKEPACKING</code>, <code>CASTELLBIKE</code>... — o crea uno nuevo si no encaja ninguno, ver más abajo.</div>
+              </span>
+            </li>
           </ul>
         </div>
       </div>
@@ -582,7 +639,8 @@
                 <tr><td class="field-name">Tipus de ruta</td><td>Solo detalle</td><td>Si el punto de inicio y el de fin están casi en el mismo sitio (Circular) o lejos (Lineal)</td><td><code>routeShape</code></td></tr>
                 <tr><td class="field-name">TrailRank</td><td>Solo detalle</td><td>Puntuación 1-99 que combina distancia y desnivel total</td><td><code>trailRank</code></td></tr>
                 <tr><td class="field-name">Perfil de l'etapa</td><td>Solo detalle</td><td>Se dibuja con todos los puntos de altitud del track</td><td><em>no corregible</em></td></tr>
-                <tr><td class="field-name">Etiqueta de tipo</td><td>Listado y detalle</td><td>La decide la carpeta donde subiste el archivo</td><td><em>mueve el archivo de carpeta</em></td></tr>
+                <tr><td class="field-name">Etiqueta de tipo</td><td>Solo listado</td><td>La decide la carpeta donde subiste el archivo; el color de la etiqueta se calcula solo a partir del nombre del tipo (siempre el mismo color para el mismo tipo, sin configurarlo)</td><td><em>mueve el archivo de carpeta</em></td></tr>
+                <tr><td class="field-name">"Veure al mapa"</td><td>Solo detalle</td><td>Si el GPX viene de Wikiloc, usa el enlace real a la ruta que trae su propia metadata; si no, cae a un mapa de OpenStreetMap centrado en la ruta</td><td><em>no corregible</em></td></tr>
               </tbody>
             </table>
           </div>
@@ -595,62 +653,176 @@
       </div>
     </section>
 
+    <!-- ================= Mapa de datos ================= -->
+    <section class="file-section" id="mapa-datos">
+      <h2 class="file-title"><span class="dot"></span>Mapa de datos</h2>
+      <p class="file-note">Toda la app, pantalla a pantalla, campo a campo: de dónde sale cada dato que ves en la web. Tres orígenes posibles — <span class="origin-tag origin-gpx">GPX</span> (viene del propio archivo <code>.gpx</code>, calculado o leído tal cual), <span class="origin-tag origin-json">JSON</span> (inyectado desde <code>config.json</code> o <code>theme.json</code>) y <span class="origin-tag origin-fijo">FIJO</span> (texto o comportamiento escrito en el código, no configurable). Cuando ves <span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span> junto a un campo, significa que <strong style="color:var(--ink);">se calcula del GPX por defecto, pero si ese campo está definido en <code class="mono">routeOverrides</code>, el JSON manda</strong> — el cálculo automático se ignora del todo, no se mezclan.</p>
+
+      <div class="field" id="origen-inicio" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3 style="font-size:16px;">Pantalla de inicio</h3>
+        </div>
+        <div class="table-scroll">
+          <table class="calc-table origin-table">
+            <colgroup><col class="col-campo"><col class="col-origen"><col class="col-gpx"><col class="col-json"></colgroup>
+            <thead><tr><th>Campo en pantalla</th><th>Origen</th><th>Dentro del GPX</th><th>Dentro del JSON</th></tr></thead>
+            <tbody>
+              <tr><td class="field-name">Logo de la cabecera</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">—</td><td class="dim">— (ruta <code>imgs/club.avif</code> escrita en el código)</td></tr>
+              <tr><td class="field-name">Texto alternativo del logo</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>config.json</code> → <code>orgName</code></td></tr>
+              <tr><td class="field-name">Título del banner</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>config.json</code> → <code>sections[0].title</code></td></tr>
+              <tr><td class="field-name">Subtítulo del banner</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>sections[0].subtitle</code> (o <code>orgTagline</code> si no lo pones)</td></tr>
+              <tr><td class="field-name">Imagen del banner</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>sections[0].image</code></td></tr>
+              <tr><td class="field-name">Texto del banner</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>sections[0].body</code></td></tr>
+              <tr><td class="field-name">Enlace "Vols venir?"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>sections[0].linkUrl</code> / <code>linkLabel</code></td></tr>
+              <tr><td class="field-name">Botón "Veure les rutes"</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">—</td><td class="dim">— (texto fijo)</td></tr>
+              <tr><td class="field-name">Aviso de instalación PWA</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">—</td><td class="dim">— (según el navegador, no configurable)</td></tr>
+              <tr><td class="field-name">Caja "Patrocinadors"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>sponsors[]</code></td></tr>
+              <tr><td class="field-name">Caja "Segueix-nos"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>social[]</code> — usuario de <code>label</code>, o detectado de <code>url</code> si no hay <code>label</code></td></tr>
+              <tr><td class="field-name">Caja "En vols dir alguna cosa?"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>contactEmail</code></td></tr>
+              <tr><td class="field-name">"Enllaços"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>sections[]</code> con <code>"type": "link"</code></td></tr>
+              <tr><td class="field-name">Barra de copyright</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>copyrightText</code></td></tr>
+              <tr><td class="field-name">Colores (fondos, botones, bordes...)</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>theme.json</code>, los 12 tokens de la sección de abajo</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="field" id="origen-listado" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3 style="font-size:16px;">Listado de rutas</h3>
+        </div>
+        <div class="table-scroll">
+          <table class="calc-table origin-table">
+            <colgroup><col class="col-campo"><col class="col-origen"><col class="col-gpx"><col class="col-json"></colgroup>
+            <thead><tr><th>Campo en pantalla</th><th>Origen</th><th>Dentro del GPX</th><th>Dentro del JSON</th></tr></thead>
+            <tbody>
+              <tr><td class="field-name">"← Inici" / logo / tema</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">—</td><td class="dim">— (igual que en inicio)</td></tr>
+              <tr><td class="field-name">Título grande</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>config.json</code> → <code>siteTitle</code></td></tr>
+              <tr><td class="field-name">"N rutas carregades"</td><td><span class="origin-tag origin-gpx">GPX</span></td><td>calculado: nº de <code>.gpx</code> de <code>manifest.json</code> que se han podido leer</td><td class="dim">—</td></tr>
+              <tr><td class="field-name">Opciones del desplegable de tipo</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">tipos = nombres de carpeta en <code>rutas/</code></td><td><code>filters.trackTypes</code> (solo el orden)</td></tr>
+              <tr><td class="field-name">Etiquetas "Fàcil / Difícil / Molt difícil"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>filters.difficultyLabels</code></td></tr>
+              <tr><td class="field-name">Rangos de distancia / desnivell</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>filters.distanceBuckets</code> / <code>elevationBuckets</code></td></tr>
+              <tr><td class="field-name">Etiqueta de tipo en la tarjeta</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">carpeta del archivo, vía <code>manifest.json</code></td><td class="dim">— (no está en <code>config.json</code>)</td></tr>
+              <tr><td class="field-name">Color de esa etiqueta</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">—</td><td class="dim">— (hash del nombre del tipo, en el código)</td></tr>
+              <tr><td class="field-name">Trazado del mini-mapa</td><td><span class="origin-tag origin-gpx">GPX</span></td><td>puntos <code>lat</code>/<code>lon</code> de cada <code>&lt;trkpt&gt;</code></td><td class="dim">—</td></tr>
+              <tr><td class="field-name">Nombre</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td><code>&lt;name&gt;</code>, parte antes de la coma</td><td><code>routeOverrides["&lt;archivo&gt;"].name</code></td></tr>
+              <tr><td class="field-name">Ubicación</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td><code>&lt;name&gt;</code>, parte después de la coma</td><td><code>routeOverrides["&lt;archivo&gt;"].location</code></td></tr>
+              <tr><td class="field-name">Dificultat</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>desnivel por km del track</td><td><code>routeOverrides["&lt;archivo&gt;"].difficulty</code></td></tr>
+              <tr><td class="field-name">Distància</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>suma Haversine entre puntos</td><td><code>routeOverrides["&lt;archivo&gt;"].distanceKm</code></td></tr>
+              <tr><td class="field-name">Desnivell (+)</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>suma de tramos que suben</td><td><code>routeOverrides["&lt;archivo&gt;"].elevGain</code></td></tr>
+              <tr><td class="field-name">Durada estimada</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>velocidad estimada según el desnivel</td><td><code>routeOverrides["&lt;archivo&gt;"].duration</code></td></tr>
+              <tr><td class="field-name">Caja "Patrocinadors"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>sponsors[]</code></td></tr>
+              <tr><td class="field-name">Botón flotante "Filtres"</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">—</td><td class="dim">— (el número del badge se calcula de los filtros activos)</td></tr>
+              <tr><td class="field-name">Barra de copyright</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>copyrightText</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="field" id="origen-detalle" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3 style="font-size:16px;">Detalle de una ruta</h3>
+        </div>
+        <div class="table-scroll">
+          <table class="calc-table origin-table">
+            <colgroup><col class="col-campo"><col class="col-origen"><col class="col-gpx"><col class="col-json"></colgroup>
+            <thead><tr><th>Campo en pantalla</th><th>Origen</th><th>Dentro del GPX</th><th>Dentro del JSON</th></tr></thead>
+            <tbody>
+              <tr><td class="field-name">"← Rutes" / logo / tema</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">—</td><td class="dim">— (igual que en las otras pantallas)</td></tr>
+              <tr><td class="field-name">Nombre</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td><code>&lt;name&gt;</code>, parte antes de la coma</td><td><code>routeOverrides["&lt;archivo&gt;"].name</code></td></tr>
+              <tr><td class="field-name">Ubicación</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td><code>&lt;name&gt;</code>, parte después de la coma</td><td><code>routeOverrides["&lt;archivo&gt;"].location</code></td></tr>
+              <tr><td class="field-name">Gráfico "Perfil de l'etapa"</td><td><span class="origin-tag origin-gpx">GPX</span></td><td>todos los puntos de altitud del track</td><td class="dim">— (no corregible)</td></tr>
+              <tr><td class="field-name">Altitud mín. / máx. del gráfico</td><td><span class="origin-tag origin-gpx">GPX</span></td><td>el punto más alto / más bajo del track</td><td class="dim">—</td></tr>
+              <tr><td class="field-name">Distància</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>suma Haversine entre puntos</td><td><code>routeOverrides["&lt;archivo&gt;"].distanceKm</code></td></tr>
+              <tr><td class="field-name">Desnivell positiu</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>suma de tramos que suben</td><td><code>routeOverrides["&lt;archivo&gt;"].elevGain</code></td></tr>
+              <tr><td class="field-name">Durada estimada</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>velocidad estimada según el desnivel</td><td><code>routeOverrides["&lt;archivo&gt;"].duration</code></td></tr>
+              <tr><td class="field-name">Dificultat</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>desnivel por km del track</td><td><code>routeOverrides["&lt;archivo&gt;"].difficulty</code></td></tr>
+              <tr><td class="field-name">Tipus de ruta</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>distancia entre el punto de inicio y el de fin</td><td><code>routeOverrides["&lt;archivo&gt;"].routeShape</code></td></tr>
+              <tr><td class="field-name">Desnivell negatiu</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>suma de tramos que bajan</td><td><code>routeOverrides["&lt;archivo&gt;"].elevLoss</code></td></tr>
+              <tr><td class="field-name">Altitud màxima</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>el punto más alto del track</td><td><code>routeOverrides["&lt;archivo&gt;"].maxAlt</code></td></tr>
+              <tr><td class="field-name">Altitud mínima</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>el punto más bajo del track</td><td><code>routeOverrides["&lt;archivo&gt;"].minAlt</code></td></tr>
+              <tr><td class="field-name">TrailRank</td><td><span class="origin-tag origin-gpx">GPX</span><span class="origin-arrow">→</span><span class="origin-tag origin-json">JSON</span></td><td>fórmula que combina distancia y desnivel</td><td><code>routeOverrides["&lt;archivo&gt;"].trailRank</code></td></tr>
+              <tr><td class="field-name">"Veure al mapa ↗"</td><td><span class="origin-tag origin-gpx">GPX</span></td><td>enlace de Wikiloc en la metadata del GPX (o mapa de OpenStreetMap calculado si no hay)</td><td class="dim">— (no corregible)</td></tr>
+              <tr><td class="field-name">Caja "Patrocinadors"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>sponsors[]</code></td></tr>
+              <tr><td class="field-name">Barra de copyright</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>copyrightText</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- ================= rutas/config.json ================= -->
     <section class="file-section" id="config">
       <h2 class="file-title"><span class="dot"></span>rutas/config.json</h2>
       <p class="file-note">Archivo de configuración general: identidad del club, patrocinadores, filtros, redes sociales y correcciones manuales de rutas. Se edita a mano y <strong>nunca</strong> se regenera solo (a diferencia de <code>manifest.json</code>).</p>
 
-      <div class="field" id="identidad">
-        <div class="field-copy">
-          <h3><span class="key">siteTitle</span> <span class="key">orgTagline</span> <span class="type-pill">string</span></h3>
-          <p>Título grande de la cabecera y el subtítulo en mayúsculas justo debajo. Aparecen en la pantalla de inicio y en el listado de rutas.</p>
-          <pre class="snippet">"siteTitle": <span class="str">"Les teves rutes"</span>,
-"orgTagline": <span class="str">"ESPORT &amp; NATURA"</span></pre>
+      <div class="field" id="identidad" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3><span class="key">siteTitle</span> <span class="key">orgName</span> <span class="key">orgTagline</span> <span class="type-pill">string</span></h3>
+          <p>Tres nombres, tres sitios distintos — es fácil confundirlos porque los tres son "el nombre del club" en el fondo:</p>
         </div>
-        <div class="mockup-wrap">
-          <div class="mockup-label">Cabecera — pantalla de inicio</div>
-          <div class="mockup app app-light">
-            <div class="app-header">
-              <div>
-                <div class="title">Club Esportiu Castelldans<span class="callout" style="position:static;display:inline-flex;margin-left:6px;transform:translateY(-2px);">1</span></div>
-                <div class="tagline">ESPORT &amp; NATURA <span class="callout" style="position:static;display:inline-flex;margin-left:4px;transform:translateY(-2px);">2</span></div>
-              </div>
-              <div class="app-toggle">☀︎</div>
+        <div style="display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap:24px; margin-top:14px;">
+          <div>
+            <pre class="snippet" style="margin-top:0;">"siteTitle": <span class="str">"Les teves rutes"</span>,
+"orgName": <span class="str">"Club Esportiu Castelldans"</span>,
+"orgTagline": <span class="str">"ESPORT &amp; NATURA"</span></pre>
+            <p class="also">Ninguno de los tres aparece ya como título grande en la cabecera de inicio — esa cabecera ahora es solo el logo pequeño + el botón de tema, ver más abajo en <code class="mono">theme.json</code> → "Dónde se ve cada uno".</p>
+          </div>
+          <div class="mockup-wrap">
+            <div class="mockup-label">Listado de rutas</div>
+            <div class="mockup app app-light" style="padding:14px 18px;">
+              <div class="title" style="font-size:19px; position:relative;">Les teves rutes<span class="callout" style="position:absolute; top:-8px; right:-10px;">1</span></div>
             </div>
-            <div class="app-banner"><div class="btitle">L'any 2013...</div></div>
+            <div class="mockup-label" style="margin-top:10px;">Banner de inicio (caja amarilla)</div>
+            <div class="mockup app app-light">
+              <div class="app-banner" style="margin:14px; position:relative;">
+                <div class="btitle" style="position:relative;">Club Esportiu Castelldans<span class="callout" style="position:absolute; top:-6px; right:-8px;">2</span></div>
+                <div style="font-size:9px; font-weight:700; letter-spacing:.08em; opacity:.55; margin-top:2px; position:relative;">ESPORT &amp; NATURA<span class="callout" style="position:absolute; top:-4px; right:-8px;">3</span></div>
+              </div>
+            </div>
+            <div class="legend" style="margin-top:8px;">
+              <div class="row"><span class="num">1</span> <code class="mono">siteTitle</code> — solo aquí, título del listado</div>
+              <div class="row"><span class="num">2</span> <code class="mono">sections[0].title</code> del banner (no <code class="mono">orgName</code> — son campos independientes aunque suelen decir lo mismo)</div>
+              <div class="row"><span class="num">3</span> <code class="mono">orgTagline</code> — se usa como subtítulo del banner solo si ese banner no define su propio <code class="mono">subtitle</code></div>
+            </div>
           </div>
-          <div class="legend">
-            <div class="row"><span class="num">1</span> nota: el título grande en pantalla lo pone <code class="mono">orgName</code>, no <code class="mono">siteTitle</code> — este último se usa como título de la pestaña del listado de rutas.</div>
-            <div class="row"><span class="num">2</span> <code class="mono">orgTagline</code></div>
-          </div>
+        </div>
+        <div class="note-box">
+          <code class="mono">orgName</code> ya no se ve como texto en ningún sitio — queda como texto alternativo (accesibilidad) del logo pequeño de la cabecera, y como respaldo del copyright si no defines <code class="mono">copyrightText</code> (<code class="mono">© {año} {orgName}</code>).
         </div>
       </div>
 
-      <div class="field">
-        <div class="field-copy">
+      <div class="field" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
           <h3><span class="key">contactEmail</span> <span class="key">copyrightText</span> <span class="type-pill">string</span></h3>
-          <p>El email se muestra como enlace <code>mailto:</code> en el pie de página. El texto de copyright va en la última línea del footer; si no lo defines, se usa <code>© {año actual} {siteTitle}</code> automáticamente.</p>
+          <p>Van en dos sitios distintos de la pantalla, no juntos: el email vive en la caja "En vols dir alguna cosa?" (solo en la pantalla de inicio); el copyright es una barra propia, de ancho completo, que aparece <strong>al final de las tres pantallas</strong> (inicio, listado y detalle). Si no defines <code class="mono">copyrightText</code>, se usa <code class="mono">© {año actual} {orgName}</code>.</p>
           <pre class="snippet">"contactEmail": <span class="str">"cecastelldans@gmail.com"</span>,
 "copyrightText": <span class="str">"©2025 Club Esportiu Castelldans."</span></pre>
         </div>
-        <div class="mockup-wrap">
-          <div class="mockup-label">Pie de página</div>
-          <div class="mockup app app-light" style="position:relative;">
-            <div class="app-footer" style="margin:14px;">
-              <div class="cols">
-                <div style="flex:1;">
-                  <div class="col-title">En vols dir alguna cosa?</div>
-                  <div class="link" style="position:relative;">cecastelldans@gmail.com<span class="callout" style="position:absolute; right:-26px; top:-2px;">1</span></div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:14px;">
+          <div class="mockup-wrap" style="flex:1; min-width:220px;">
+            <div class="mockup-label">"En vols dir alguna cosa?" — solo inicio</div>
+            <div class="mockup app app-light" style="position:relative;">
+              <div class="app-footer" style="margin:14px;">
+                <div class="cols">
+                  <div style="flex:1;">
+                    <div class="col-title">En vols dir alguna cosa?</div>
+                    <div class="link" style="position:relative;">cecastelldans@gmail.com<span class="callout" style="position:absolute; right:-26px; top:-2px;">1</span></div>
+                  </div>
                 </div>
               </div>
-              <hr />
-              <div class="copy" style="position:relative;">©2025 Club Esportiu Castelldans.<span class="callout" style="position:absolute; right:-26px; top:-2px;">2</span></div>
             </div>
           </div>
-          <div class="legend">
-            <div class="row"><span class="num">1</span> <code class="mono">contactEmail</code></div>
-            <div class="row"><span class="num">2</span> <code class="mono">copyrightText</code></div>
+          <div class="mockup-wrap" style="flex:1; min-width:220px;">
+            <div class="mockup-label">Barra inferior — las 3 pantallas</div>
+            <div class="mockup app app-light" style="padding:12px 16px; border-top:2px solid #e2e8f0; position:relative;">
+              <div style="font-size:9px; opacity:.6;">©2025 Club Esportiu Castelldans.<span class="callout" style="position:absolute; top:6px; right:16px;">2</span></div>
+            </div>
           </div>
+        </div>
+        <div class="legend" style="margin-top:10px;">
+          <div class="row"><span class="num">1</span> <code class="mono">contactEmail</code></div>
+          <div class="row"><span class="num">2</span> <code class="mono">copyrightText</code></div>
         </div>
       </div>
 
@@ -748,22 +920,20 @@
       <div class="field" id="filtros">
         <div class="field-copy">
           <h3><span class="key">filters</span> <span class="type-pill">object</span></h3>
-          <p><code class="mono">trackTypes</code> fija el orden de los chips de filtro (los tipos detectados que no estén en la lista se añaden al final, ordenados alfabéticamente). <code class="mono">difficultyLabels</code> traduce las claves internas a texto visible. <code class="mono">distanceBuckets</code> / <code class="mono">elevationBuckets</code> definen los rangos del panel "Més filtres".</p>
+          <p><code class="mono">trackTypes</code> fija el orden de las opciones del desplegable de tipo (los tipos detectados que no estén en la lista se añaden al final, ordenados alfabéticamente). <code class="mono">difficultyLabels</code> traduce las claves internas a texto visible. <code class="mono">distanceBuckets</code> / <code class="mono">elevationBuckets</code> definen los rangos del panel "Filtres avançats" — ese, el de dificultad/distància/desnivell, sigue siendo de chips.</p>
           <pre class="snippet">"trackTypes": [<span class="str">"ROAD"</span>, <span class="str">"GRAVEL"</span>, <span class="str">"TRAIL"</span>],
 "difficultyLabels": { <span class="str">"dificil"</span>: <span class="str">"Difícil"</span> }</pre>
         </div>
         <div class="mockup-wrap">
-          <div class="mockup-label">Fila de chips — orden = orden de la lista</div>
-          <div class="mockup app app-light" style="padding-top:10px;">
-            <div class="app-chips">
-              <div class="app-chip active">Tots</div>
-              <div class="app-chip" style="position:relative;">ROAD<span class="callout" style="position:absolute; top:-10px; right:-6px;">1</span></div>
-              <div class="app-chip">GRAVEL</div>
-              <div class="app-chip">TRAIL</div>
+          <div class="mockup-label">Desplegable de tipo — orden = orden de la lista</div>
+          <div class="mockup app app-light" style="padding:14px 16px;">
+            <div style="border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px; font-size:11px; display:flex; align-items:center; justify-content:space-between; position:relative;">
+              <span>Tots els tipus</span><span>⌄</span>
+              <span class="callout" style="position:absolute; top:-8px; right:-8px;">1</span>
             </div>
           </div>
           <div class="legend">
-            <div class="row"><span class="num">1</span> orden tomado de <code class="mono">trackTypes</code></div>
+            <div class="row"><span class="num">1</span> las opciones del desplegable, en ese orden, vienen de <code class="mono">trackTypes</code></div>
           </div>
         </div>
       </div>
@@ -771,28 +941,40 @@
       <div class="field" id="social">
         <div class="field-copy">
           <h3><span class="key">social</span> <span class="type-pill">array</span></h3>
-          <p>Iconos circulares en el footer. Cada entrada es una red + su URL. Una red no reconocida cae a un icono genérico de web.</p>
+          <p>"Segueix-nos" es su propia caja (solo en inicio, va justo <strong>encima</strong> de "En vols dir alguna cosa?"). Cada entrada es una píldora: icono + usuario. El usuario se detecta solo del final de la URL — <code class="mono">.../cecastelldans/</code> se convierte en <code class="mono">@cecastelldans</code>. Si la detección no queda bien (URLs raras, IDs numéricos...), añade <code class="mono">label</code> para forzar el texto. Una red no reconocida cae a un icono genérico de web.</p>
           <pre class="snippet">"social": [
-  { <span class="str">"network"</span>: <span class="str">"instagram"</span>, <span class="str">"url"</span>: <span class="str">"https://instagram.com/..."</span> }
+  { <span class="str">"network"</span>: <span class="str">"instagram"</span>, <span class="str">"url"</span>: <span class="str">"https://instagram.com/cecastelldans/"</span> },
+  { <span class="str">"network"</span>: <span class="str">"strava"</span>, <span class="str">"url"</span>: <span class="str">"https://strava.com/clubs/123456"</span>, <span class="str">"label"</span>: <span class="str">"Club a Strava"</span> }
 ]</pre>
         </div>
         <div class="mockup-wrap">
-          <div class="mockup-label">Footer — "Segueix-nos"</div>
-          <div class="mockup app app-light">
-            <div class="app-footer" style="margin:14px; position:relative;">
-              <div class="col-title">Segueix-nos</div>
-              <div class="social"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-              <span class="callout" style="position:absolute; top:24px; right:14px;">1</span>
+          <div class="mockup-label">"Segueix-nos" — caja propia, sin color de marca</div>
+          <div class="mockup app app-light" style="padding:16px;">
+            <div style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; opacity:.55; margin-bottom:8px;">Segueix-nos</div>
+            <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-start;">
+              <div style="display:flex; align-items:center; gap:6px; background:#f1f5f9; border-radius:999px; padding:3px 10px 3px 3px; position:relative;">
+                <span style="width:18px; height:18px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:9px;">◎</span>
+                <span style="font-size:10px; font-weight:600;">@cecastelldans</span>
+                <span class="callout" style="position:absolute; top:-8px; right:-8px;">1</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; background:#f1f5f9; border-radius:999px; padding:3px 10px 3px 3px; position:relative;">
+                <span style="width:18px; height:18px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:9px;">◎</span>
+                <span style="font-size:10px; font-weight:600;">Club a Strava</span>
+                <span class="callout" style="position:absolute; top:-8px; right:-8px;">2</span>
+              </div>
             </div>
           </div>
-          <div class="legend"><div class="row"><span class="num">1</span> un círculo por cada entrada de <code class="mono">social</code>, en el mismo orden</div></div>
+          <div class="legend">
+            <div class="row"><span class="num">1</span> sin <code class="mono">label</code> → usuario detectado de la URL</div>
+            <div class="row"><span class="num">2</span> con <code class="mono">label</code> → texto forzado, ignora la URL</div>
+          </div>
         </div>
       </div>
 
       <div class="field" id="secciones">
         <div class="field-copy">
           <h3><span class="key">sections</span> <span class="type-pill">array</span></h3>
-          <p>Bloques de tipo <code>"banner"</code> (imagen + título + texto + enlace, arriba de la pantalla de inicio) o <code>"link"</code> (fila de enlace rápido en "Enllaços" del footer).</p>
+          <p>Bloques de tipo <code>"banner"</code> (imagen + título + subtítulo + texto + enlace, arriba de la pantalla de inicio) o <code>"link"</code> (fila de enlace rápido en "Enllaços" del footer). El banner admite <code>subtitle</code>; si no lo pones, usa <code class="mono">orgTagline</code> como subtítulo por defecto.</p>
           <pre class="snippet">{ <span class="str">"type"</span>: <span class="str">"banner"</span>, <span class="str">"title"</span>: <span class="str">"..."</span>, <span class="str">"linkLabel"</span>: <span class="str">"Vols venir?"</span> }
 { <span class="str">"type"</span>: <span class="str">"link"</span>, <span class="str">"label"</span>: <span class="str">"Botiga"</span>, <span class="str">"url"</span>: <span class="str">"..."</span> }</pre>
         </div>
@@ -849,7 +1031,7 @@
           <div class="swatch"><div class="pair"><div style="background:#ffffff;"></div><div style="background:#0f172a;"></div></div><div class="meta"><div class="k">background</div><div class="u">fondo de pantalla</div></div></div>
           <div class="swatch"><div class="pair"><div style="background:#0f172a;"></div><div style="background:#f8fafc;"></div></div><div class="meta"><div class="k">foreground</div><div class="u">texto principal</div></div></div>
           <div class="swatch"><div class="pair"><div style="background:#ffffff;"></div><div style="background:#1e293b;"></div></div><div class="meta"><div class="k">card</div><div class="u">fondo de tarjetas</div></div></div>
-          <div class="swatch"><div class="pair"><div style="background:#2563eb;"></div><div style="background:#2563eb;"></div></div><div class="meta"><div class="k">primary</div><div class="u">botones, chip activo, badge de tipo</div></div></div>
+          <div class="swatch"><div class="pair"><div style="background:#2563eb;"></div><div style="background:#2563eb;"></div></div><div class="meta"><div class="k">primary</div><div class="u">botones, chip activo</div></div></div>
           <div class="swatch"><div class="pair"><div style="background:#ffffff;"></div><div style="background:#ffffff;"></div></div><div class="meta"><div class="k">primaryForeground</div><div class="u">texto sobre primary</div></div></div>
           <div class="swatch"><div class="pair"><div style="background:#f1f5f9;"></div><div style="background:#1e293b;"></div></div><div class="meta"><div class="k">muted</div><div class="u">chip inactivo, badge "Fàcil"</div></div></div>
           <div class="swatch"><div class="pair"><div style="background:#64748b;"></div><div style="background:#94a3b8;"></div></div><div class="meta"><div class="k">mutedForeground</div><div class="u">texto secundario</div></div></div>
@@ -907,7 +1089,7 @@
           </div>
         </div>
         <div class="legend" style="margin-top:14px;">
-          <div class="row"><span class="num">1</span> badge de tipo = <code class="mono">primary</code> / <code class="mono">primaryForeground</code></div>
+          <div class="row"><span class="num">1</span> badge de tipo = color propio por tipo de ruta (no es un token de <code class="mono">theme.json</code>: se calcula automáticamente a partir del nombre de la carpeta, para que cada tipo se distinga a simple vista aunque se añadan tipos nuevos)</div>
           <div class="row"><span class="num">2</span> badge "Difícil" = <code class="mono">accent</code> / <code class="mono">accentForeground</code> · "Molt difícil" usaría <code class="mono">destructive</code> · "Fàcil" usaría <code class="mono">muted</code></div>
           <div class="row"><span class="num">3</span> borde de la tarjeta = <code class="mono">border</code> · fondo = <code class="mono">card</code> · texto = <code class="mono">foreground</code> / <code class="mono">mutedForeground</code></div>
         </div>

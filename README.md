@@ -38,7 +38,7 @@ El service worker només funciona servit per http(s) (no amb file://), i cada ru
 
 ## Agregar tus propias rutas
 
-1. Copia tu archivo `.gpx` dentro de `rutas/<TIPO>/`, donde `<TIPO>` es una de: `MTB`, `ROAD`, `GRAVEL`, `TRAIL`, `BIKEPACKING`.
+1. Copia tu archivo `.gpx` dentro de `rutas/<TIPO>/`. `<TIPO>` no es una lista cerrada en el código — es, literalmente, el nombre de cada carpeta que hay dentro de `rutas/` (hoy: `MTB`, `ROAD`, `GRAVEL`, `TRAIL`, `BIKEPACKING`, `CASTELLBIKE`). Crear una carpeta nueva y subir un `.gpx` dentro basta para que aparezca como tipo nuevo, sin tocar nada más.
 2. Haz `git push`. Nada más — `rutas/manifest.json` se regenera solo en cada despliegue (ver más abajo), no lo edites a mano.
 3. El nombre y ubicación de la ruta se toman del tag `<name>` del GPX, en formato `Nombre, Ubicación`. Distancia, desnivel, duración y dificultad se calculan automáticamente a partir de los puntos del track.
 
@@ -76,13 +76,15 @@ node scripts/build-manifest.js
 
 ## Configurar la pantalla de inicio (`rutas/config.json`)
 
-- `siteTitle` — título mostrado en la cabecera.
-- `contactEmail` — se muestra como `mailto:` en el footer.
-- `copyrightText` — línea de copyright del footer (si no se define, se usa `© {año actual} {siteTitle}`).
-- `sections` — bloques tipo `banner` (imagen/título + subtítulo + texto + enlace, se muestra arriba) o `link` (aparece como enlace rápido en el footer).
+- `siteTitle` — título del listado de rutas (no aparece en la pantalla de inicio; la cabecera de inicio ahora es solo el logo y el botón de tema).
+- `orgName` — nombre del club. No se muestra como texto en pantalla: es el `alt` del logo de la cabecera y el respaldo de `copyrightText`.
+- `orgTagline` — eslogan del club. Se usa como subtítulo del banner de inicio si ese banner no define su propio `subtitle`.
+- `contactEmail` — se muestra como `mailto:` en la caja "En vols dir alguna cosa?" (solo en inicio).
+- `copyrightText` — línea de copyright, en una barra propia al final de las tres pantallas (si no se define, se usa `© {año actual} {orgName}`).
+- `sections` — bloques tipo `banner` (imagen/título/subtítulo/texto/enlace, arriba de la pantalla de inicio) o `link` (enlace rápido en "Enllaços").
   - El banner admite `image` (nombre de archivo dentro de `imgs/`, p.ej. `"image": "club.avif"`); si no se define o falla al cargar, se muestra `title` en texto.
-- `social` — redes sociales, cada una `{ "network": "instagram" | "x" | "facebook" | "strava" | "youtube", "url": "..." }`. Se muestran como iconos circulares en el footer; una red no reconocida cae a un icono genérico.
 - `showSponsors` — `true`/`false` (por defecto `true`). Ponlo en `false` para ocultar del todo la sección de patrocinadores sin tener que borrar la lista de `sponsors`.
+- `social` — redes sociales, cada una `{ "network": "instagram" | "x" | "facebook" | "strava" | "youtube", "url": "...", "label": "..." (opcional) }`. Aparecen en su propia caja "Segueix-nos" (solo en inicio, encima de "En vols dir alguna cosa?"), como icono + usuario; el usuario se detecta del final de la URL, o usa `label` para forzarlo. Una red no reconocida cae a un icono genérico.
 - `sponsors` — cada uno `{ "name": "...", "url": "...", "logo": "archivo.png" }`. El campo `logo` es opcional: si lo pones, coloca la imagen en `imgs/`; si no existe o falla al cargar, se muestra el nombre en texto automáticamente.
 
 Todas las imágenes (logo del club, logos de patrocinadores) se guardan en la carpeta `imgs/` en la raíz del proyecto, y se referencian en `config.json` solo por nombre de archivo.

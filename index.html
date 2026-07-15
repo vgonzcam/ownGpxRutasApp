@@ -101,23 +101,48 @@
         }
       }
       .back-btn {
-        width: 38px;
+        width: 40px;
         border-radius: 50%;
         padding: 0;
       }
       .back-label {
         display: none;
       }
-      .header-bar {
+      .filter-toggle-desktop {
+        display: none;
+      }
+      .filter-fab {
+        position: absolute;
+        left: 50%;
+        bottom: calc(20px + env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        z-index: 20;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        background: var(--bar-bg);
-        border: 1px solid var(--bar-border);
-        border-radius: 20px;
-        padding: 10px 14px;
-        box-shadow: var(--bar-shadow);
+        gap: 8px;
+        padding: 13px 20px;
+        border-radius: 999px;
+        border: none;
+        cursor: pointer;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--fab-bg);
+        color: var(--fab-fg);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      .filter-fab .badge {
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-family: ui-monospace, monospace;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--fab-badge-bg);
+        color: var(--fab-badge-fg);
       }
       @media (min-width: 560px) {
         .back-btn {
@@ -129,12 +154,11 @@
         .back-label {
           display: inline;
         }
-        .header-bar {
-          background: none;
-          border: none;
-          box-shadow: none;
-          padding: 0;
-          border-radius: 0;
+        .filter-toggle-desktop {
+          display: block;
+        }
+        .filter-fab {
+          display: none;
         }
       }
       @media (min-width: 560px) {
@@ -174,6 +198,32 @@
         return alpha === undefined
           ? `rgb(${c[0]},${c[1]},${c[2]})`
           : `rgba(${c[0]},${c[1]},${c[2]},${alpha})`;
+      }
+
+      // Un color distinto por tipo de ruta (ROAD, GRAVEL, tipos nuevos que se creen...),
+      // asignado de forma determinista por hash del nombre — así un tipo siempre sale
+      // del mismo color, sin tener que mantener una lista a mano. Todos con texto blanco,
+      // contraste comprobado ≥4.5:1 (WCAG AA).
+      const TYPE_ACCENT_COLORS = [
+        "#2563eb", // blue
+        "#7c3aed", // violet
+        "#0f766e", // teal
+        "#c2410c", // orange
+        "#047857", // emerald
+        "#4f46e5", // indigo
+        "#c026d3", // fuchsia
+        "#0369a1", // sky
+        "#e11d48", // rose
+        "#4d7c0f", // lime
+        "#78350f", // brown
+        "#475569", // slate
+      ];
+      function typeAccentBg(type) {
+        let hash = 0;
+        for (let i = 0; i < type.length; i++) {
+          hash = (hash * 53 + type.charCodeAt(i)) >>> 0;
+        }
+        return TYPE_ACCENT_COLORS[hash % TYPE_ACCENT_COLORS.length];
       }
 
       // Base palette. Contrast-checked against WCAG AA (4.5:1 for normal text);
@@ -262,11 +312,10 @@
             chipFgActive: rgbStr(palette.light.primaryForeground),
             buttonBg: rgbStr(palette.light.primary),
             buttonFg: rgbStr(palette.light.primaryForeground),
-            typeBadgeBg: rgbStr(palette.light.primary),
-            typeBadgeFg: rgbStr(palette.light.primaryForeground),
-            areaFill: rgbStr(palette.light.primary, 0.35),
+            areaFill: rgbStr(palette.light.primary, 0.65),
             lineStroke: rgbStr(palette.light.primary),
             linkColor: rgbStr(palette.light.accentForeground),
+            chromeBg: rgbStr(palette.light.foreground, 0.02),
             shadowCard:
               "0 4px 12px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.08)",
           },
@@ -284,11 +333,10 @@
             chipFgActive: rgbStr(palette.dark.primaryForeground),
             buttonBg: rgbStr(palette.dark.primary),
             buttonFg: rgbStr(palette.dark.primaryForeground),
-            typeBadgeBg: rgbStr(palette.dark.primary),
-            typeBadgeFg: rgbStr(palette.dark.primaryForeground),
             areaFill: rgbStr(palette.dark.primary, 0.3),
             lineStroke: rgbStr([96, 165, 250]),
             linkColor: rgbStr(palette.dark.accentForeground),
+            chromeBg: rgbStr(palette.dark.foreground, 0.035),
             shadowCard:
               "0 10px 20px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.4)",
           },
@@ -336,6 +384,16 @@
         web: (c) =>
           `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="${c}" stroke-width="1.7"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"></path></svg>`,
       };
+      function socialHandle(url) {
+        try {
+          const parts = new URL(url).pathname.split("/").filter(Boolean);
+          return parts.length
+            ? "@" + decodeURIComponent(parts[parts.length - 1])
+            : url;
+        } catch (e) {
+          return url;
+        }
+      }
 
       let state = {
         screen: "home",
@@ -572,7 +630,17 @@
         const centerLon = ((Math.min(...lons) + Math.max(...lons)) / 2).toFixed(
           5,
         );
-        const externalUrl = `https://www.openstreetmap.org/#map=12/${centerLat}/${centerLon}`;
+        let sourceUrl = null;
+        const metadataEl = doc.getElementsByTagName("metadata")[0];
+        if (metadataEl) {
+          const directLink = Array.from(metadataEl.children).find(
+            (el) => el.tagName.toLowerCase() === "link",
+          );
+          if (directLink) sourceUrl = directLink.getAttribute("href");
+        }
+        const externalUrl =
+          sourceUrl ||
+          `https://www.openstreetmap.org/#map=12/${centerLat}/${centerLon}`;
 
         return {
           id,
@@ -615,6 +683,27 @@
           .join(" ");
       }
 
+      function smoothLinePath(pts) {
+        if (pts.length < 3) {
+          return (
+            "M " +
+            pts.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" L ")
+          );
+        }
+        let d = "M " + pts[0][0].toFixed(1) + " " + pts[0][1].toFixed(1) + " ";
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = pts[i - 1] || pts[i];
+          const p1 = pts[i];
+          const p2 = pts[i + 1];
+          const p3 = pts[i + 2] || p2;
+          const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+          const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+          const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+          const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+          d += `C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)} `;
+        }
+        return d;
+      }
       function chartData(profile) {
         const min = Math.min(...profile);
         const max = Math.max(...profile);
@@ -631,15 +720,11 @@
             ((v - min) / (max - min || 1)) * (h - topPad - bottomPad);
           return [x, y];
         });
-        const points = pts
-          .map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1))
-          .join(" ");
-        let d = "M " + pts[0][0].toFixed(1) + " " + h + " ";
-        pts.forEach((p) => {
-          d += "L " + p[0].toFixed(1) + " " + p[1].toFixed(1) + " ";
-        });
-        d += "L " + pts[pts.length - 1][0].toFixed(1) + " " + h + " Z";
-        return { points, areaPath: d, min, max };
+        const linePath = smoothLinePath(pts);
+        const areaPath =
+          linePath +
+          `L ${pts[pts.length - 1][0].toFixed(1)} ${h} L ${pts[0][0].toFixed(1)} ${h} Z`;
+        return { linePath, areaPath, min, max };
       }
 
       async function loadConfig() {
@@ -839,8 +924,21 @@
             ? `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="${theme.textPrimary}" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"></path></svg>`
             : `<svg viewBox="0 0 24 24" width="18" height="18" fill="${theme.textPrimary}"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"></path></svg>`;
         const themeToggleHtml = `<div id="themeToggle" title="Canvia el tema" style="cursor:pointer;flex-shrink:0;width:40px;height:40px;border-radius:50%;background:${theme.chipBg};display:flex;align-items:center;justify-content:center;">${themeIconHtml}</div>`;
-        const logoToggleHtml = `<div style="display:flex;align-items:center;gap:20px;flex-shrink:0;"><img src="imgs/club.avif" alt="${orgName}" style="max-height:56px;max-width:100%;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none';">${themeToggleHtml}</div>`;
-        const logoToggleHtmlCompact = `<div style="display:flex;align-items:center;gap:14px;flex-shrink:0;"><img src="imgs/club.avif" alt="${orgName}" style="height:40px;width:auto;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none';">${themeToggleHtml}</div>`;
+        function headerBarHtml(backId, backLabel) {
+          const backHtml = backId
+            ? `<div id="${backId}" class="back-btn" style="cursor:pointer;flex-shrink:0;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;">${backLabel}</span></div>`
+            : "";
+          return `<div style="display:flex;align-items:center;padding:14px 24px;background:${theme.chromeBg};border-bottom:1px solid ${theme.border};margin-bottom:20px;">
+      ${backHtml}
+      <div style="display:flex;align-items:center;gap:14px;margin-left:auto;">
+        <img src="imgs/club.avif" alt="${orgName}" style="height:32px;width:auto;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none';">
+        ${themeToggleHtml}
+      </div>
+    </div>`;
+        }
+        function bottomBarHtml() {
+          return `<div style="margin-top:20px;padding:14px 24px;background:${theme.chromeBg};border-top:1px solid ${theme.border};font-size:11px;color:${theme.textSecondary};">${copyrightText}</div>`;
+        }
 
         const sections = (state.config && state.config.sections) || [];
         const showSponsors = !(state.config && state.config.showSponsors === false);
@@ -852,7 +950,6 @@
         const footerBg = theme.cardBg;
         const footerFg = theme.textPrimary;
         const footerMuted = theme.textSecondary;
-        const footerDivider = theme.border;
         const footerChipBg = theme.chipBg;
 
         const footerLinksHtml = quickLinks.length
@@ -862,11 +959,19 @@
   </div>`
           : "";
 
-        const footerSocialHtml = social.length
-          ? `<div>
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:${footerMuted};margin-bottom:10px;">Segueix-nos</div>
-    <div style="display:flex;gap:8px;">
-      ${social.map((s) => `<a href="${s.url}" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:50%;background:${footerChipBg};display:flex;align-items:center;justify-content:center;">${(socialIcons[s.network] || socialIcons.web)(footerFg)}</a>`).join("")}
+        const socialBoxHtml = social.length
+          ? `<div style="margin-top:20px;background:${theme.cardBg};border:1px solid ${theme.border};box-shadow:${theme.shadowCard};border-radius:20px;padding:20px;">
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:${footerMuted};margin-bottom:12px;">Segueix-nos</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      ${social
+        .map((s) => {
+          const handle = s.label || socialHandle(s.url);
+          return `<a href="${s.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border-radius:999px;background:${footerChipBg};text-decoration:none;">
+        <span style="width:24px;height:24px;border-radius:50%;background:${theme.cardBg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${(socialIcons[s.network] || socialIcons.web)(footerFg)}</span>
+        <span style="font-size:12px;font-weight:600;color:${footerFg};">${handle}</span>
+      </a>`;
+        })
+        .join("")}
     </div>
   </div>`
           : "";
@@ -898,7 +1003,7 @@
           `© ${new Date().getFullYear()} ${orgName}`;
 
         const footerHtml =
-          quickLinks.length || social.length || contactEmail
+          quickLinks.length || contactEmail
             ? `<div style="margin-top:20px;background:${footerBg};color:${footerFg};border:1px solid ${theme.border};box-shadow:${theme.shadowCard};border-radius:20px;padding:24px 20px;">
     <div style="display:flex;flex-wrap:wrap;gap:24px;">
       <div style="flex:2;min-width:150px;">
@@ -906,9 +1011,7 @@
         ${contactEmail ? `<a href="mailto:${contactEmail}" style="font-size:12px;color:${footerFg};text-decoration:none;">${contactEmail}</a>` : ""}
       </div>
       ${footerLinksHtml}
-      ${footerSocialHtml}
     </div>
-    <div style="font-size:11px;color:${footerMuted};border-top:1px solid ${footerDivider};padding-top:14px;margin-top:16px;">${copyrightText}</div>
   </div>`
             : "";
 
@@ -923,9 +1026,10 @@
                 ? `<img src="imgs/${s.image}" alt="${s.title || ""}" style="max-height:56px;max-width:100%;object-fit:contain;display:block;margin-bottom:12px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
            <div style="display:none;">${titleTextHtml}</div>`
                 : titleTextHtml;
+              const subtitle = s.subtitle || orgTagline;
               return `<div style="background:${theme.heroBg};border-radius:16px;padding:18px 20px;margin-bottom:18px;">
         ${titleHtml}
-        ${s.subtitle ? `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:${theme.textTertiary};margin-bottom:10px;">${s.subtitle}</div>` : ""}
+        ${subtitle ? `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:${theme.textTertiary};margin-bottom:10px;">${subtitle}</div>` : ""}
         <div style="font-size:15px;line-height:1.6;white-space:pre-line;color:${theme.textSecondary};margin-bottom:${s.linkUrl ? "10px" : "0"};">${s.body || ""}</div>
         ${s.linkUrl ? `<a href="${s.linkUrl}" target="_blank" rel="noopener" style="text-decoration:none;font-size:13px;font-weight:600;color:${theme.linkColor};">${s.linkLabel || "Més informació"} ↗</a>` : ""}
       </div>`;
@@ -945,21 +1049,17 @@
           </div>`
             : "";
 
-          app.innerHTML = `<div class="screen" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding:calc(28px + env(safe-area-inset-top)) 24px 40px 24px;">
-      <div class="container-narrow">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-          <div>
-            <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:${theme.textPrimary};line-height:1.2;">${orgName}</div>
-            <div style="font-size:12px;font-weight:600;letter-spacing:0.08em;color:${theme.textTertiary};">${orgTagline}</div>
-          </div>
-          ${logoToggleHtml}
-        </div>
+          app.innerHTML = `<div class="screen" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding:calc(28px + env(safe-area-inset-top)) 0 40px 0;">
+      ${headerBarHtml(null, null)}
+      <div class="container-narrow" style="padding:0 24px;">
         ${installBannerHtml}
         ${bannerHtml}
         <div id="goList" style="cursor:pointer;background:${theme.buttonBg};color:${theme.buttonFg};text-align:center;padding:16px;border-radius:16px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;margin-bottom:8px;">Veure les rutes</div>
         ${sponsorsBoxHtml}
+        ${socialBoxHtml}
         ${footerHtml}
       </div>
+      ${bottomBarHtml()}
     </div></div>`;
 
           document
@@ -1020,14 +1120,12 @@
               })
               .join("");
 
-          const chips = chipRow(
-            ["ALL", ...trackTypes].map((t) => ({
-              key: t,
-              label: t === "ALL" ? "Tots" : t,
-            })),
-            state.filterType,
-            "type",
-          );
+          const typeOptionsHtml = ["ALL", ...trackTypes]
+            .map(
+              (t) =>
+                `<option value="${t}"${state.filterType === t ? " selected" : ""}>${t === "ALL" ? "Tots els tipus" : t}</option>`,
+            )
+            .join("");
           const difficultyBuckets = [
             { key: "ALL", label: "Tots" },
             { key: "facil", label: difficultyLabels.facil },
@@ -1058,7 +1156,7 @@
           <svg viewBox="0 0 300 130" style="width:100%;height:100%;display:block;">
             <polyline points="${r.shapePoints}" fill="none" stroke="${theme.lineStroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
           </svg>
-          <div style="position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.04em;padding:4px 9px;border-radius:20px;background:${theme.typeBadgeBg};color:${theme.typeBadgeFg};">${r.trackType}</div>
+          <div style="position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;letter-spacing:0.04em;padding:4px 9px;border-radius:20px;background:${typeAccentBg(r.trackType)};color:#ffffff;">${r.trackType}</div>
         </div>
         <div style="padding:16px 18px 18px 18px;">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px;">
@@ -1081,40 +1179,51 @@
               ? `<div style="text-align:center;padding:40px 0;font-size:13px;color:${theme.textSecondary};">Cap ruta amb aquests filtres.</div>`
               : "";
 
+          const activeAdvancedCount = [
+            state.filterDifficulty,
+            state.filterDistance,
+            state.filterElevation,
+          ].filter((v) => v !== "ALL").length;
           const moreFiltersHtml = state.moreFiltersOpen
             ? `
-      <div style="background:${theme.chipBg};border:1px solid ${theme.border};border-radius:16px;padding:16px;margin-bottom:16px;">
+      <div id="moreFiltersPanel" style="background:${theme.chipBg};border:1px solid ${theme.border};border-radius:16px;padding:16px;margin-bottom:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div style="font-size:13px;font-weight:700;color:${theme.textPrimary};">Filtres avançats</div>
           <div id="clearMoreFiltersBtn" style="cursor:pointer;font-size:12px;font-weight:600;color:${theme.linkColor};">Esborrar filtres</div>
         </div>
         <div style="font-size:11px;font-weight:600;color:${theme.textTertiary};text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Dificultat</div>
-        <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:2px;">${difficultyChips}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">${difficultyChips}</div>
         <div style="font-size:11px;font-weight:600;color:${theme.textTertiary};text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Distància</div>
-        <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:2px;">${distanceChips}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">${distanceChips}</div>
         <div style="font-size:11px;font-weight:600;color:${theme.textTertiary};text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Desnivell</div>
-        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;">${elevationChips}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">${elevationChips}</div>
       </div>`
             : "";
 
-          app.innerHTML = `<div class="screen" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding:calc(28px + env(safe-area-inset-top)) 24px 40px 24px;">
-      <div class="container-wide">
-        <div class="header-bar" style="margin-bottom:14px;--bar-bg:${theme.cardBg};--bar-border:${theme.border};--bar-shadow:${theme.shadowCard};">
-          <div id="backHomeBtn" class="back-btn" style="cursor:pointer;flex-shrink:0;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;">Inici</span></div>
-          ${logoToggleHtmlCompact}
-        </div>
+          app.innerHTML = `<div class="screen" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding:calc(28px + env(safe-area-inset-top)) 0 100px 0;">
+      ${headerBarHtml("backHomeBtn", "Inici")}
+      <div class="container-wide" style="padding:0 24px;">
         <div style="font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:${theme.textPrimary};margin-bottom:4px;">${siteTitle}</div>
         <div style="font-size:14px;color:${theme.textSecondary};margin:0 0 18px 0;">${decorated.length} ${decorated.length === 1 ? "ruta carregada" : "rutes carregades"}</div>
-        <input id="searchInput" type="text" placeholder="Cerca per nom o ubicació…" value="${state.searchText.replace(/"/g, "&quot;")}" style="width:100%;box-sizing:border-box;padding:11px 14px;border-radius:12px;border:1px solid ${theme.border};background:${theme.cardBg};color:${theme.textPrimary};font-size:14px;font-family:inherit;margin-bottom:14px;outline:none;--ph-color:${theme.textTertiary};" />
-        <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px;">${chips}</div>
-        <div id="moreFiltersToggle" style="cursor:pointer;font-size:12px;font-weight:600;color:${theme.linkColor};margin-bottom:16px;">${state.moreFiltersOpen ? "Menys filtres ↑" : "Més filtres (dificultat, distància, desnivell) ↓"}</div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <input id="searchInput" type="text" placeholder="Cerca per nom o ubicació…" value="${state.searchText.replace(/"/g, "&quot;")}" style="flex:1;min-width:0;box-sizing:border-box;padding:11px 14px;border-radius:12px;border:1px solid ${theme.border};background:${theme.cardBg};color:${theme.textPrimary};font-size:14px;font-family:inherit;outline:none;--ph-color:${theme.textTertiary};" />
+          <select id="typeFilterSelect" style="flex-shrink:0;max-width:40%;box-sizing:border-box;padding:11px 12px;border-radius:12px;border:1px solid ${theme.border};background:${theme.cardBg};color:${theme.textPrimary};font-size:14px;font-family:inherit;outline:none;cursor:pointer;">${typeOptionsHtml}</select>
+        </div>
+        <div id="moreFiltersToggle" class="filter-toggle-desktop" style="cursor:pointer;font-size:12px;font-weight:600;color:${theme.linkColor};margin-bottom:16px;">${state.moreFiltersOpen ? "Menys filtres ↑" : "Més filtres (dificultat, distància, desnivell) ↓"}</div>
         ${moreFiltersHtml}
         <div class="cards-grid">${cards}</div>
         ${emptyFilterMsg}
         ${sponsorsBoxHtml}
-        ${footerHtml}
       </div>
-    </div></div>`;
+      ${bottomBarHtml()}
+    </div>
+    <button id="filterFabBtn" class="filter-fab" type="button" style="--fab-bg:${theme.textPrimary};--fab-fg:${theme.screenBg};--fab-badge-bg:${theme.chipBgActive};--fab-badge-fg:${theme.chipFgActive};">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M7 12h10M10 19h4"></path></svg>
+      <span>Filtres</span>
+      ${activeAdvancedCount > 0 ? `<span class="badge">${activeAdvancedCount}</span>` : ""}
+      <span style="font-size:11px;">${state.moreFiltersOpen ? "↑" : "↓"}</span>
+    </button>
+  </div>`;
 
           document
             .getElementById("themeToggle")
@@ -1124,6 +1233,9 @@
             .addEventListener("click", backToHome);
           document
             .getElementById("moreFiltersToggle")
+            .addEventListener("click", toggleMoreFilters);
+          document
+            .getElementById("filterFabBtn")
             .addEventListener("click", toggleMoreFilters);
           if (document.getElementById("clearMoreFiltersBtn"))
             document
@@ -1137,6 +1249,9 @@
             searchInput.focus();
             searchInput.setSelectionRange(searchCaret, searchCaret);
           }
+          document
+            .getElementById("typeFilterSelect")
+            .addEventListener("change", (e) => setFilter(e.target.value));
           app.querySelectorAll(".filterChip").forEach((el) =>
             el.addEventListener("click", () => {
               const group = el.getAttribute("data-group");
@@ -1159,20 +1274,17 @@
 
         const r = decorated.find((x) => x.id === state.selected);
         const chart = chartData(r.profile);
-        app.innerHTML = `<div class="screen" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding-top:calc(20px + env(safe-area-inset-top));padding-bottom:32px;">
+        app.innerHTML = `<div class="screen" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding:calc(28px + env(safe-area-inset-top)) 0 32px 0;">
+    ${headerBarHtml("backBtn", "Rutes")}
     <div class="container-narrow" style="padding:0 24px 20px 24px;">
-      <div class="header-bar" style="margin-bottom:8px;--bar-bg:${theme.cardBg};--bar-border:${theme.border};--bar-shadow:${theme.shadowCard};">
-        <div id="backBtn" class="back-btn" style="cursor:pointer;flex-shrink:0;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;">Rutes</span></div>
-        ${logoToggleHtmlCompact}
-      </div>
       <div style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:${theme.textPrimary};margin-bottom:2px;">${r.name}</div>
       <div style="font-size:14px;color:${theme.textSecondary};">${r.location}</div>
     </div>
     <div class="container-narrow" style="padding:0 24px 20px 24px;">
-      <div style="height:220px;position:relative;background:${theme.cardBg};border-radius:20px;overflow:hidden;border:1px solid ${theme.border};box-shadow:${theme.shadowCard};">
+      <div style="height:220px;position:relative;background:${theme.heroBg};border-radius:20px;overflow:hidden;border:1px solid ${theme.border};box-shadow:${theme.shadowCard};">
         <svg viewBox="0 0 300 130" preserveAspectRatio="none" style="width:100%;height:100%;display:block;">
           <path d="${chart.areaPath}" fill="${theme.areaFill}" stroke="none"></path>
-          <polyline points="${chart.points}" fill="none" stroke="${theme.lineStroke}" stroke-width="2.5" vector-effect="non-scaling-stroke"></polyline>
+          <path d="${chart.linePath}" fill="none" stroke="${theme.lineStroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
         </svg>
         <div style="position:absolute;top:16px;left:24px;font-size:11px;font-weight:700;letter-spacing:0.04em;color:${theme.textSecondary};text-transform:uppercase;">Perfil de l'etapa</div>
         <div style="position:absolute;bottom:16px;left:24px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;color:${theme.textSecondary};">${chart.min} m</div>
@@ -1196,8 +1308,8 @@
       </div>
       <a href="${r.externalUrl}" target="_blank" rel="noopener" style="text-decoration:none;background:${theme.buttonBg};border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:${theme.buttonFg};margin-bottom:16px;">Veure al mapa ↗</a>
       ${sponsorsBoxHtml}
-      ${footerHtml}
     </div>
+    ${bottomBarHtml()}
   </div></div>`;
         document
           .getElementById("backBtn")
