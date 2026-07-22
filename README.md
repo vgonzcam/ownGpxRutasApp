@@ -2,12 +2,13 @@
 
 ## Documentación
 
-| Documento | Qué explica | Dónde verlo |
-|---|---|---|
-| `README.md` | Correr en local, estructura del proyecto, cómo configurar `rutas/config.json`, despliegue | Este mismo archivo |
-| Manual de rutas y configuración | Guía rápida (añadir una ruta, añadir un tipo nuevo, corregir datos a mano) + referencia campo a campo de `rutas/config.json` y `rutas/theme.json` con miniaturas de la app | [vgonzcam.github.io/ownGpxRutasApp/MANUAL-CONFIGURACION.html](https://vgonzcam.github.io/ownGpxRutasApp/MANUAL-CONFIGURACION.html) (tras el próximo deploy) |
-| [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md) | Redirige al manual de arriba — por si navegas el repo sin tener la web desplegada | [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md) en este repo |
-| La app | La web de rutas en sí | [vgonzcam.github.io/ownGpxRutasApp](https://vgonzcam.github.io/ownGpxRutasApp/) |
+| Documento                                     | Qué explica                                                                                                                                                      | Dónde verlo                                                                                                                                                 |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `README.md`                                   | Correr en local, estructura del proyecto, cómo configurar `rutas/config.json`, despliegue                                                                        | Este mismo archivo                                                                                                                                          |
+| Guía de gestión (paso a paso, solo navegador) | Cómo añadir/eliminar rutas, corregir datos, cambiar textos, patrocinadores, redes sociales y colores — todo desde github.com, explicado para quien no conoce Git | [vgonzcam.github.io/ownGpxRutasApp/guia-gestion-rutas.html](https://vgonzcam.github.io/ownGpxRutasApp/guia-gestion-rutas.html) (tras el próximo deploy)     |
+| Manual de referencia de configuración         | Campo a campo de `rutas/config.json` y `rutas/theme.json`, con miniaturas de la app señalando dónde aparece cada valor                                           | [vgonzcam.github.io/ownGpxRutasApp/manual-configuracion.html](https://vgonzcam.github.io/ownGpxRutasApp/manual-configuracion.html) (tras el próximo deploy) |
+| [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md)  | Redirige a la guía de gestión — por si navegas el repo sin tener la web desplegada                                                                               | [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md) en este repo                                                                                                   |
+| La app                                        | La web de rutas en sí                                                                                                                                            | [vgonzcam.github.io/ownGpxRutasApp](https://vgonzcam.github.io/ownGpxRutasApp/)                                                                             |
 
 Las dos últimas filas son páginas del propio sitio (GitHub Pages), no archivos que se abran desde el repositorio.
 
@@ -64,7 +65,7 @@ Distancia, desnivell, duración, dificultad, etc. se calculan por fórmula a par
 }
 ```
 
-Explicación campo a campo (cómo se calcula cada uno y qué pasa si lo sobrescribes) en el [manual de rutas y configuración](https://vgonzcam.github.io/ownGpxRutasApp/MANUAL-CONFIGURACION.html).
+Explicación campo a campo (cómo se calcula cada uno y qué pasa si lo sobrescribes) en el [manual de referencia de configuración](https://vgonzcam.github.io/ownGpxRutasApp/manual-configuracion.html), o el flujo paso a paso en la [guía de gestión](https://vgonzcam.github.io/ownGpxRutasApp/guia-gestion-rutas.html#corregir-datos).
 
 Todos los campos son opcionales — pon solo los que quieras corregir. `difficulty` acepta `"facil"`, `"dificil"` o `"moltDificil"`; `routeShape` acepta `"Circular"` o `"Lineal"`. Esta clave tiene que coincidir con el `"file"` de `manifest.json`. El archivo `config.json` **no** se regenera automáticamente (a diferencia de `manifest.json`), así que los cambios se quedan aunque hagas push de nuevas rutas.
 

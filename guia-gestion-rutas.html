@@ -1,0 +1,593 @@
+<title>Guía de gestión — Rutes GPX</title>
+<style>
+  /* Mismos tokens que manual-configuracion.html — vienen literalmente de rutas/theme.json */
+  :root {
+    --paper: #ffffff;
+    --paper-raised: #ffffff;
+    --ink: #0f172a;
+    --ink-soft: #64748b;
+    --ink-faint: rgba(15,23,42,0.45);
+    --accent: #2563eb;
+    --accent-ink: #2563eb;
+    --key-bg: #fef9c3;
+    --key-ink: #854d0e;
+    --line: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --code-ink: #0f172a;
+    --warn: #dc2626;
+    --ok: #15803d;
+    --ok-bg: #f0fdf4;
+    --gh-btn: #1f883d;
+    --radius: 10px;
+    --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", "URW Palladio L", Georgia, serif;
+    --font-body: -apple-system, "Segoe UI", system-ui, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0f172a;
+      --paper-raised: #1e293b;
+      --ink: #f8fafc;
+      --ink-soft: #94a3b8;
+      --ink-faint: rgba(248,250,252,0.45);
+      --accent: #2563eb;
+      --accent-ink: #7fa8f5;
+      --key-bg: #1e3a8a;
+      --key-ink: #fde68a;
+      --line: #334155;
+      --code-bg: #1e293b;
+      --code-ink: #f8fafc;
+      --warn: #f87171;
+      --ok: #4ade80;
+      --ok-bg: rgba(74,222,128,0.08);
+      --gh-btn: #2ea043;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0f172a; --paper-raised: #1e293b; --ink: #f8fafc; --ink-soft: #94a3b8;
+    --ink-faint: rgba(248,250,252,0.45); --accent: #2563eb; --accent-ink: #7fa8f5;
+    --key-bg: #1e3a8a; --key-ink: #fde68a; --line: #334155; --code-bg: #1e293b;
+    --code-ink: #f8fafc; --warn: #f87171; --ok: #4ade80; --ok-bg: rgba(74,222,128,0.08); --gh-btn: #2ea043;
+  }
+  :root[data-theme="light"] {
+    --paper: #ffffff; --paper-raised: #ffffff; --ink: #0f172a; --ink-soft: #64748b;
+    --ink-faint: rgba(15,23,42,0.45); --accent: #2563eb; --accent-ink: #2563eb;
+    --key-bg: #fef9c3; --key-ink: #854d0e; --line: #e2e8f0; --code-bg: #f1f5f9;
+    --code-ink: #0f172a; --warn: #dc2626; --ok: #15803d; --ok-bg: #f0fdf4; --gh-btn: #1f883d;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); line-height: 1.55; }
+  a { color: var(--accent-ink); }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; font-weight: 600; color: var(--ink); }
+  code, .mono { font-family: var(--font-mono); }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr);
+    gap: 40px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 120px;
+  }
+  @media (max-width: 860px) { .shell { grid-template-columns: 1fr; } }
+
+  /* ---------- sidebar ---------- */
+  nav.toc { position: sticky; top: 24px; align-self: start; font-size: 13.5px; }
+  @media (max-width: 860px) { nav.toc { position: static; margin-bottom: 8px; } }
+  nav.toc .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; color: var(--ink-faint); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; margin: 0 0 20px; padding: 0; border-left: 1px solid var(--line); }
+  nav.toc li { margin: 0; }
+  nav.toc a { display: block; padding: 5px 0 5px 14px; color: var(--ink-soft); text-decoration: none; border-left: 2px solid transparent; margin-left: -1px; }
+  nav.toc a:hover { color: var(--ink); border-left-color: var(--accent); }
+  nav.toc .file-label { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); padding: 10px 0 4px 14px; }
+
+  /* ---------- hero ---------- */
+  header.hero { max-width: 640px; margin-bottom: 40px; }
+  header.hero .eyebrow { text-transform: uppercase; letter-spacing: 0.1em; font-size: 12px; color: var(--accent-ink); font-weight: 600; margin-bottom: 10px; }
+  header.hero h1 { font-size: 34px; margin: 0 0 14px; }
+  header.hero p { color: var(--ink-soft); font-size: 15.5px; max-width: 58ch; }
+  .hero-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .hero-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 7px 13px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink); text-decoration: none; }
+  .hero-link:hover { border-color: var(--accent-ink); }
+  .hero-link .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gh-btn); flex-shrink: 0; }
+
+  /* ---------- flow index grid ---------- */
+  .flow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; margin: 0 0 64px; }
+  .flow-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; background: var(--paper-raised); text-decoration: none; color: var(--ink); display: flex; flex-direction: column; gap: 6px; transition: border-color .15s, transform .15s; }
+  .flow-card:hover { border-color: var(--accent-ink); transform: translateY(-1px); }
+  .flow-card .flow-n { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+  .flow-card h3 { font-family: var(--font-body); font-size: 14.5px; font-weight: 700; margin: 0; color: var(--ink); }
+  .flow-card p { font-size: 12px; color: var(--ink-soft); margin: 0; line-height: 1.4; }
+
+  /* ---------- sections ---------- */
+  section.file-section { margin-bottom: 68px; padding-top: 8px; }
+  h2.file-title {
+    font-size: 15px; font-family: var(--font-mono); font-weight: 600; color: var(--ink);
+    background: var(--code-bg); border: 1px solid var(--line); display: inline-flex; align-items: center;
+    gap: 8px; padding: 7px 14px; border-radius: 999px; margin: 0 0 8px;
+  }
+  h2.file-title .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .file-note { color: var(--ink-soft); font-size: 14px; max-width: 66ch; margin: 0 0 30px; }
+
+  h3.recipe-title { font-size: 19px; margin: 0 0 4px; }
+  .recipe-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 16px; }
+  .recipe-when { font-size: 13.5px; color: var(--ink-soft); max-width: 68ch; margin: 0 0 14px; }
+  .recipe-block { border-top: 1px solid var(--line); padding: 32px 0; scroll-margin-top: 20px; }
+
+  .touch { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-soft); }
+  .path { font-family: var(--font-mono); font-size: 12.5px; background: var(--key-bg); color: var(--key-ink); padding: 1px 7px; border-radius: 5px; }
+
+  /* ---------- pattern boxes (reusable "how to" procedures) ---------- */
+  .pattern {
+    border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper-raised);
+    padding: 22px 24px 24px; margin: 0 0 28px; scroll-margin-top: 20px;
+  }
+  .pattern-label { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent-ink); margin-bottom: 10px; }
+  .pattern-label .letter { width: 20px; height: 20px; border-radius: 5px; background: var(--accent-ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .pattern h3 { font-size: 16px; margin: 0 0 6px; }
+  .pattern > p.desc { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 4px; max-width: 64ch; }
+
+  .ref-pattern { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 5px 12px 5px 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--code-bg); color: var(--ink); text-decoration: none; margin: 4px 6px 4px 0; }
+  .ref-pattern .letter { width: 18px; height: 18px; border-radius: 5px; background: var(--accent-ink); color: var(--paper); display: flex; align-items: center; justify-content: center; font-size: 10px; font-family: var(--font-mono); flex-shrink: 0; }
+  .ref-pattern:hover { border-color: var(--accent-ink); }
+
+  /* ---------- steps ---------- */
+  ol.steps { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+  ol.steps li { display: flex; gap: 12px; align-items: flex-start; }
+  ol.steps .n {
+    flex-shrink: 0; width: 25px; height: 25px; border-radius: 50%; background: var(--paper-raised);
+    border: 1px solid var(--accent-ink); color: var(--accent-ink); font-family: var(--font-mono);
+    font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  ol.steps .t { font-size: 14px; color: var(--ink-soft); padding-top: 3px; }
+  ol.steps .t strong, ol.steps .t code { color: var(--ink); }
+  ol.steps .t .sub { display: block; font-size: 12.5px; color: var(--ink-faint); margin-top: 3px; }
+
+  /* ---------- GitHub UI chips (references to literal buttons/labels, not screenshots) ---------- */
+  .gh-btn { display: inline-flex; align-items: center; gap: 4px; background: var(--gh-btn); color: #fff; font-size: 12px; font-weight: 600; padding: 3px 10px 4px; border-radius: 6px; font-family: var(--font-body); white-space: nowrap; }
+  .gh-chip { display: inline-flex; align-items: center; background: var(--paper); border: 1px solid var(--line); color: var(--ink); font-size: 12px; padding: 2px 9px 3px; border-radius: 6px; font-family: var(--font-body); white-space: nowrap; }
+  .gh-icon { display: inline-flex; align-items: center; background: var(--paper); border: 1px solid var(--line); color: var(--ink-soft); font-size: 11px; width: 20px; height: 20px; justify-content:center; border-radius: 6px; font-family: var(--font-body); }
+
+  /* ---------- before/after diff ---------- */
+  .diff { font-family: var(--font-mono); font-size: 12.5px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; margin: 14px 0 4px; }
+  .diff .row { padding: 8px 14px; white-space: pre-wrap; word-break: break-word; border-top: 1px solid var(--line); }
+  .diff .row:first-child { border-top: none; }
+  .diff .row .tag { display: inline-block; width: 14px; font-weight: 700; }
+  .diff .old { background: rgba(220,38,38,0.07); color: var(--ink-soft); }
+  .diff .old .tag { color: var(--warn); }
+  .diff .new { background: rgba(37,99,235,0.07); color: var(--ink); }
+  .diff .new .tag { color: var(--accent-ink); }
+
+  /* ---------- callouts ---------- */
+  .callout { border-left: 3px solid var(--line); padding: 10px 16px; font-size: 13px; color: var(--ink-soft); margin: 16px 0; border-radius: 0 6px 6px 0; background: var(--code-bg); }
+  .callout strong { color: var(--ink); }
+  .callout.warn { border-left-color: var(--warn); background: rgba(220,38,38,0.06); }
+  .callout.ok { border-left-color: var(--ok); background: var(--ok-bg); }
+  .callout.ok::before { content: "✓ "; color: var(--ok); font-weight: 700; }
+
+  /* ---------- reference table (routeOverrides fields) ---------- */
+  .table-scroll { overflow-x: auto; margin: 16px 0 4px; }
+  table.ref-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 620px; }
+  table.ref-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); font-weight: 600; padding: 0 10px 8px; border-bottom: 1px solid var(--line); }
+  table.ref-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.ref-table tr:last-child td { border-bottom: none; }
+  table.ref-table td.k { font-family: var(--font-mono); font-weight: 600; white-space: nowrap; }
+
+  footer.end { max-width: 640px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 13.5px; }
+
+  .theme-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 50; width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--paper-raised); color: var(--ink); display: flex;
+    align-items: center; justify-content: center; cursor: pointer; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro">☀︎</button>
+
+<div class="shell">
+  <nav class="toc">
+    <div class="eyebrow">En esta página</div>
+    <div class="file-label">Cómo funciona GitHub</div>
+    <ol>
+      <li><a href="#empezar">Antes de empezar</a></li>
+      <li><a href="#patron-editar">Editar un texto</a></li>
+      <li><a href="#patron-subir">Subir un archivo</a></li>
+      <li><a href="#patron-borrar">Eliminar un archivo</a></li>
+      <li><a href="#patron-publicar">Publicar y deshacer</a></li>
+    </ol>
+    <div class="file-label">Gestionar rutas</div>
+    <ol>
+      <li><a href="#anadir-ruta">Añadir una ruta</a></li>
+      <li><a href="#anadir-tipo">Añadir un tipo nuevo</a></li>
+      <li><a href="#eliminar-ruta">Eliminar una ruta</a></li>
+      <li><a href="#corregir-datos">Corregir los datos</a></li>
+    </ol>
+    <div class="file-label">Textos e imágenes</div>
+    <ol>
+      <li><a href="#textos-fijos">Textos fijos</a></li>
+      <li><a href="#banner-enlaces">Banner y enlaces</a></li>
+      <li><a href="#patrocinadores">Patrocinadores</a></li>
+      <li><a href="#redes-sociales">Redes sociales</a></li>
+    </ol>
+    <div class="file-label">Apariencia</div>
+    <ol><li><a href="#colores">Colores del sitio</a></li></ol>
+    <div class="file-label">Si algo falla</div>
+    <ol><li><a href="#problemas">Errores comunes</a></li></ol>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Guía · Rutes GPX — Club Esportiu Castelldans</div>
+      <h1>Gestionar la web sin salir del navegador</h1>
+      <p>Todo lo que se puede cambiar en la web — rutas, textos, imágenes, colores — se hace desde <strong>github.com</strong>, la página donde vive el proyecto. No hace falta instalar nada, no hace falta saber programar, y no hace falta la aplicación de escritorio de GitHub. Esta guía explica cada tarea paso a paso, botón a botón.</p>
+      <div class="hero-links">
+        <a class="hero-link" href="https://github.com/vgonzcam/ownGpxRutasApp" target="_blank" rel="noopener"><span class="dot"></span>Abrir el repositorio</a>
+        <a class="hero-link" href="https://vgonzcam.github.io/ownGpxRutasApp/" target="_blank" rel="noopener"><span class="dot"></span>Ver la web publicada</a>
+        <a class="hero-link" href="manual-configuracion.html">Referencia completa de campos ↗</a>
+      </div>
+    </header>
+
+    <div class="flow-grid">
+      <a class="flow-card" href="#anadir-ruta"><span class="flow-n">01</span><h3>Añadir una ruta</h3><p>Subir un .gpx nuevo a un tipo que ya existe.</p></a>
+      <a class="flow-card" href="#anadir-tipo"><span class="flow-n">02</span><h3>Añadir un tipo nuevo</h3><p>Crear una modalidad que aún no existe (p. ej. "XC").</p></a>
+      <a class="flow-card" href="#eliminar-ruta"><span class="flow-n">03</span><h3>Eliminar una ruta</h3><p>Quitar un .gpx de la web para siempre.</p></a>
+      <a class="flow-card" href="#corregir-datos"><span class="flow-n">04</span><h3>Corregir los datos</h3><p>Fijar a mano la dificultad, distancia, nombre...</p></a>
+      <a class="flow-card" href="#textos-fijos"><span class="flow-n">05</span><h3>Textos fijos</h3><p>Título, nombre del club, email de contacto, copyright.</p></a>
+      <a class="flow-card" href="#banner-enlaces"><span class="flow-n">06</span><h3>Banner y enlaces</h3><p>La caja grande de inicio y los enlaces rápidos.</p></a>
+      <a class="flow-card" href="#patrocinadores"><span class="flow-n">07</span><h3>Patrocinadores</h3><p>Añadir, quitar u ocultar del todo la sección.</p></a>
+      <a class="flow-card" href="#redes-sociales"><span class="flow-n">08</span><h3>Redes sociales</h3><p>Instagram, X, Facebook, Strava, YouTube.</p></a>
+      <a class="flow-card" href="#colores"><span class="flow-n">09</span><h3>Colores del sitio</h3><p>Cambiar la paleta de la web, claro y oscuro.</p></a>
+      <a class="flow-card" href="#problemas"><span class="flow-n">10</span><h3>Si algo falla</h3><p>La web deja de cargar rutas, no ves tu cambio...</p></a>
+    </div>
+
+    <!-- ================= CÓMO FUNCIONA ================= -->
+    <section class="file-section" id="empezar">
+      <h2 class="file-title"><span class="dot"></span>Antes de empezar</h2>
+      <p class="file-note">Cinco ideas que hacen falta para entender todo lo demás. Léelas una vez y ya no hace falta volver.</p>
+
+      <div class="recipe-block" style="border-top:none; padding-top:0;">
+        <table class="ref-table">
+          <tbody>
+            <tr><td class="k" style="width:150px;">Repositorio</td><td>La carpeta del proyecto entero, alojada en GitHub. La de esta web es <span class="path">vgonzcam/ownGpxRutasApp</span> — todo lo que hay dentro (rutas, textos, colores) vive ahí.</td></tr>
+            <tr><td class="k">Archivo</td><td>Un documento suelto dentro del repositorio: un <code>.gpx</code>, una imagen, o un archivo de texto como <code>config.json</code>.</td></tr>
+            <tr><td class="k">Commit</td><td>Guardar un cambio, con un mensaje corto explicando qué hiciste. Cada vez que subes, editas o borras algo en GitHub, al final te pide "hacer commit" — es el equivalente a pulsar Guardar.</td></tr>
+            <tr><td class="k">Rama <code>main</code></td><td>La versión oficial del sitio, la que está publicada ahora mismo. Todos los pasos de esta guía trabajan directamente sobre <code>main</code> — no hace falta crear ramas ni entender qué son.</td></tr>
+            <tr><td class="k">GitHub Actions</td><td>El robot que, después de cada commit, coge el contenido de <code>main</code> y lo publica en <a href="https://vgonzcam.github.io/ownGpxRutasApp/" target="_blank" rel="noopener">vgonzcam.github.io/ownGpxRutasApp</a>. Tarda 1-2 minutos. Ver el <a href="#patron-publicar">Patrón D</a>.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout warn" style="margin-top:22px;">
+          <strong>Acceso necesario:</strong> hace falta una cuenta de GitHub añadida como colaboradora de este repositorio con permiso de escritura ("Write"). Si al intentar guardar un cambio no ves el botón verde de commit sino algo sobre "crear una rama" o "fork", es que tu cuenta todavía no tiene ese permiso — pídeselo a quien administra el repositorio, en <span class="gh-chip">Settings</span> → <span class="gh-chip">Collaborators</span>.
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PATRONES ================= -->
+    <section class="file-section" id="patrones">
+      <h2 class="file-title"><span class="dot"></span>Los cuatro movimientos que se repiten siempre</h2>
+      <p class="file-note">Todas las tareas de esta guía son combinaciones de estos cuatro patrones. Apréndelos aquí una vez; las recetas de más abajo solo dicen "sigue el Patrón A" y qué cambiar exactamente.</p>
+
+      <div class="pattern" id="patron-editar">
+        <div class="pattern-label"><span class="letter">A</span>Editar un texto</div>
+        <h3>Cambiar una línea dentro de <code>config.json</code> o <code>theme.json</code></h3>
+        <p class="desc">Sirve para cualquier texto, número o color: el título del sitio, un email, una etiqueta de dificultad, un color del tema...</p>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Entra en <span class="path">github.com/vgonzcam/ownGpxRutasApp</span> y navega hasta el archivo (por ejemplo <span class="path">rutas/config.json</span>).</span></li>
+          <li><span class="n">2</span><span class="t">Arriba a la derecha del contenido del archivo, pulsa el icono del lápiz <span class="gh-icon">✏️</span> ("Edit this file").</span></li>
+          <li><span class="n">3</span><span class="t">Busca la línea que quieres cambiar. Es más rápido con <span class="gh-chip">Ctrl F</span> / <span class="gh-chip">Cmd F</span> del navegador que leyendo todo el archivo.</span></li>
+          <li><span class="n">4</span><span class="t">Escribe el valor nuevo <strong>entre las mismas comillas</strong> que ya estaban. No toques comas, llaves <code>{ }</code> ni corchetes <code>[ ]</code> de alrededor.<span class="sub">Estos archivos son JSON: una coma de más o de menos, o una comilla sin cerrar, rompe la web entera. Ver <a href="#problemas">Si algo falla</a>.</span></span></li>
+          <li><span class="n">5</span><span class="t">Baja al final de la página → sección <span class="gh-chip">Commit changes</span> → escribe un mensaje corto (p. ej. "Actualiza el email de contacto").</span></li>
+          <li><span class="n">6</span><span class="t">Deja marcada la opción <span class="gh-chip">◉ Commit directly to the main branch</span> y pulsa <span class="gh-btn">Commit changes</span>.</span></li>
+        </ol>
+        <div class="callout ok">Sigue con el <a href="#patron-publicar">Patrón D</a> para comprobar que ya está en la web.</div>
+      </div>
+
+      <div class="pattern" id="patron-subir">
+        <div class="pattern-label"><span class="letter">B</span>Subir un archivo</div>
+        <h3>Añadir un <code>.gpx</code> nuevo, o el logo de un patrocinador</h3>
+        <p class="desc">Sirve para cualquier archivo nuevo: una ruta, una foto para el banner, el logo de un patrocinador.</p>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Navega hasta la carpeta donde tiene que quedar el archivo (por ejemplo <span class="path">rutas/GRAVEL</span>, o <span class="path">imgs</span>).</span></li>
+          <li><span class="n">2</span><span class="t">Botón <span class="gh-btn">Add file ▾</span> → <span class="gh-chip">Upload files</span>.</span></li>
+          <li><span class="n">3</span><span class="t">Arrastra el archivo desde tu ordenador a la zona punteada, o pulsa "choose your files".</span></li>
+          <li><span class="n">4</span><span class="t">Baja al final → mensaje corto → <span class="gh-chip">◉ Commit directly to the main branch</span> → <span class="gh-btn">Commit changes</span>.</span></li>
+        </ol>
+        <div class="callout ok">Sigue con el <a href="#patron-publicar">Patrón D</a> para comprobar que ya está en la web.</div>
+      </div>
+
+      <div class="pattern" id="patron-borrar">
+        <div class="pattern-label"><span class="letter">C</span>Eliminar un archivo</div>
+        <h3>Quitar una ruta o una imagen para siempre</h3>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Abre el archivo que quieres borrar (clica en su nombre dentro de la carpeta).</span></li>
+          <li><span class="n">2</span><span class="t">Arriba a la derecha, icono de la papelera <span class="gh-icon">🗑</span> ("Delete this file").</span></li>
+          <li><span class="n">3</span><span class="t">Baja al final → mensaje corto (p. ej. "Elimina ruta antigua") → <span class="gh-chip">◉ Commit directly to the main branch</span> → botón rojo <span class="gh-btn" style="background:var(--warn);">Commit changes</span>.</span></li>
+        </ol>
+        <div class="callout warn">No hace falta tocar nada más — si esa ruta tenía una entrada en <code>routeOverrides</code> (ver <a href="#corregir-datos">Corregir los datos</a>), puedes dejarla o borrarla, la web la ignora si el archivo ya no existe.</div>
+      </div>
+
+      <div class="pattern" id="patron-publicar">
+        <div class="pattern-label"><span class="letter">D</span>Publicar y deshacer</div>
+        <h3>Comprobar que un cambio ya está en la web — y volver atrás si algo se rompe</h3>
+        <p class="desc" style="margin-bottom:14px;"><strong>Publicar:</strong> cada commit dispara el robot de despliegue automáticamente. No hay ningún botón de "publicar" aparte.</p>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">En el repositorio, pestaña <span class="gh-chip">Actions</span> (arriba, junto a "Code").</span></li>
+          <li><span class="n">2</span><span class="t">La entrada más reciente muestra un círculo amarillo (en curso) y luego un check verde ✅ (terminado) o una cruz roja ❌ (falló).<span class="sub">Suele tardar entre 1 y 2 minutos.</span></span></li>
+          <li><span class="n">3</span><span class="t">Abre <a href="https://vgonzcam.github.io/ownGpxRutasApp/" target="_blank" rel="noopener">la web</a> y recarga forzado con <span class="gh-chip">Ctrl Shift R</span> (Windows) o <span class="gh-chip">Cmd Shift R</span> (Mac) — la web guarda caché para funcionar sin conexión, y a veces hay que forzar la recarga para ver lo último.</span></li>
+        </ol>
+        <p class="desc" style="margin:22px 0 14px;"><strong>Deshacer:</strong> todo archivo en GitHub guarda su historial completo. Si un cambio rompe algo, puedes volver a la versión de antes sin arreglar nada a mano.</p>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Abre el archivo afectado (normalmente <span class="path">rutas/config.json</span>) y pulsa <span class="gh-chip">History</span> (arriba a la derecha del contenido, icono de reloj).</span></li>
+          <li><span class="n">2</span><span class="t">Verás la lista de commits anteriores. Clica en el que quieras recuperar — el de justo antes del que rompió algo.</span></li>
+          <li><span class="n">3</span><span class="t">Arriba a la derecha de esa versión antigua, botón <span class="gh-chip">... ▾</span> → <span class="gh-chip">Restore this file</span> (o copia su contenido y pégalo editando el archivo actual, Patrón A).</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ================= GESTIONAR RUTAS ================= -->
+    <section class="file-section" id="gestionar-rutas">
+      <h2 class="file-title"><span class="dot"></span>Gestionar rutas</h2>
+      <p class="file-note">Los tipos de ruta (MTB, ROAD, GRAVEL...) no son una lista fija en el código: son, literalmente, las carpetas que hay dentro de <span class="path">rutas/</span>.</p>
+
+      <div class="recipe-block" id="anadir-ruta">
+        <h3 class="recipe-title">01 · Añadir una ruta</h3>
+        <p class="recipe-when">Cuando el club graba o recibe un <code>.gpx</code> nuevo de un tipo que ya existe en la web (MTB, ROAD, GRAVEL, TRAIL, BIKEPACKING, CASTELLBIKE).</p>
+        <a class="ref-pattern" href="#patron-subir"><span class="letter">B</span>Subir un archivo</a>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Ve a <span class="path">rutas/</span> → entra en la carpeta del tipo (p. ej. <span class="path">rutas/ROAD</span>).</span></li>
+          <li><span class="n">2</span><span class="t">Sigue el <a href="#patron-subir">Patrón B</a> con tu archivo <code>.gpx</code>.<span class="sub">El nombre y la ubicación de la ruta se leen del propio GPX (etiqueta &lt;name&gt;Nombre, Ubicación&lt;/name&gt;), así que expórtalo con un nombre descriptivo antes de subirlo.</span></span></li>
+        </ol>
+        <div class="callout">La distancia, el desnivel, la duración y la dificultad se calculan solos a partir del track. Si algún dato no es correcto, no hace falta volver a subir el archivo: ver <a href="#corregir-datos">Corregir los datos</a>.</div>
+      </div>
+
+      <div class="recipe-block" id="anadir-tipo">
+        <h3 class="recipe-title">02 · Añadir un tipo de ruta nuevo</h3>
+        <p class="recipe-when">Cuando el club empieza una modalidad que no encaja en ninguna carpeta actual (por ejemplo "XC" o "URBAN").</p>
+        <a class="ref-pattern" href="#patron-subir"><span class="letter">B</span>Subir un archivo</a>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Entra en <span class="path">rutas/</span> (no en ninguna subcarpeta) → <span class="gh-btn">Add file ▾</span> → <span class="gh-chip">Upload files</span>.</span></li>
+          <li><span class="n">2</span><span class="t">Arrastra el primer <code>.gpx</code> de ese tipo. Encima de la zona de subida aparece un campo de texto con la ruta de destino (algo como <span class="path">rutas/</span>) — edítalo para añadir el nombre de la carpeta nueva delante del archivo, en mayúsculas para que coincida con el resto: <span class="path">rutas/XC/mi-primera-ruta-xc.gpx</span>.</span></li>
+          <li><span class="n">3</span><span class="t">Mensaje corto → <span class="gh-chip">◉ Commit directly to the main branch</span> → <span class="gh-btn">Commit changes</span>. GitHub crea la carpeta sola, en el mismo paso, porque no existía.</span></li>
+        </ol>
+        <div class="callout">El tipo nuevo aparece solo en el desplegable de filtros, al final de la lista. Si quieres decidir en qué posición sale, añade su nombre a <code>filters.trackTypes</code> en <code>config.json</code> — <a href="manual-configuracion.html#filtros">ver referencia ↗</a>.</div>
+      </div>
+
+      <div class="recipe-block" id="eliminar-ruta">
+        <h3 class="recipe-title">03 · Eliminar una ruta</h3>
+        <p class="recipe-when">Cuando una ruta ya no es válida, está duplicada, o se subió por error.</p>
+        <a class="ref-pattern" href="#patron-borrar"><span class="letter">C</span>Eliminar un archivo</a>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Ve a <span class="path">rutas/</span> → carpeta del tipo → abre el archivo <code>.gpx</code> que quieres quitar.</span></li>
+          <li><span class="n">2</span><span class="t">Sigue el <a href="#patron-borrar">Patrón C</a>.</span></li>
+        </ol>
+        <div class="callout warn">No hay papelera de reciclaje: si necesitas recuperar el archivo más adelante, está en el historial de la carpeta (<span class="gh-chip">History</span>), pero desaparece de la web en el siguiente despliegue.</div>
+      </div>
+
+      <div class="recipe-block" id="corregir-datos">
+        <h3 class="recipe-title">04 · Corregir los datos de una ruta</h3>
+        <p class="recipe-when">Cuando la dificultad, la distancia, el nombre o cualquier otro dato calculado automáticamente del GPX no es correcto — sin tener que volver a exportar ni resubir el archivo.</p>
+        <a class="ref-pattern" href="#patron-editar"><span class="letter">A</span>Editar un texto</a>
+
+        <p style="font-size:13.5px; color:var(--ink-soft); max-width:66ch; margin:16px 0;">Estos datos se calculan solos a partir de los puntos del track en cuanto subes el <code>.gpx</code>. Para fijar cualquiera de ellos a mano, se añade una entrada dentro de <code>routeOverrides</code>, en <span class="path">rutas/config.json</span>. <strong>El dato que pongas ahí manda siempre sobre el cálculo</strong> — solo hace falta escribir los campos que quieras corregir, el resto se sigue calculando solo.</p>
+
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Averigua la clave exacta de la ruta: es <code>carpeta/nombre-del-archivo.gpx</code>, tal como aparece en <span class="path">rutas/&lt;TIPO&gt;</span>. Por ejemplo <span class="path">ROAD/rc23-road-llarga-150k.gpx</span>.</span></li>
+          <li><span class="n">2</span><span class="t">Abre <span class="path">rutas/config.json</span> y sigue el <a href="#patron-editar">Patrón A</a> hasta el bloque <code>"routeOverrides": { ... }</code>.</span></li>
+          <li><span class="n">3</span><span class="t">Añade (o edita) una entrada con esa clave y los campos que quieras corregir.</span></li>
+        </ol>
+
+        <div class="diff">
+          <div class="row old"><span class="tag">−</span>"routeOverrides": {}</div>
+          <div class="row new"><span class="tag">+</span>"routeOverrides": {
+  "ROAD/rc23-road-llarga-150k.gpx": {
+    "difficulty": "dificil",
+    "distanceKm": 152
+  }
+}</div>
+        </div>
+
+        <p style="font-size:13px; color:var(--ink-faint); margin:6px 0 20px;">Si ya existen otras rutas dentro de <code>routeOverrides</code>, añade una coma después del <code>}</code> de la anterior y pega tu bloque nuevo detrás — sigue siendo una sola llave <code>routeOverrides</code> con varias rutas dentro.</p>
+
+        <div class="table-scroll">
+          <table class="ref-table">
+            <thead><tr><th>Campo</th><th>Corrige</th><th>Formato del valor</th></tr></thead>
+            <tbody>
+              <tr><td class="k">name</td><td>Nombre de la ruta</td><td>Texto libre, entre comillas</td></tr>
+              <tr><td class="k">location</td><td>Ubicación</td><td>Texto libre, entre comillas</td></tr>
+              <tr><td class="k">difficulty</td><td>Dificultat</td><td>Exactamente <code>"facil"</code>, <code>"dificil"</code> o <code>"moltDificil"</code></td></tr>
+              <tr><td class="k">duration</td><td>Durada estimada</td><td>Texto libre, p. ej. <code>"5h 30m"</code></td></tr>
+              <tr><td class="k">distanceKm</td><td>Distància</td><td>Número, sin comillas ni unidad (km), p. ej. <code>152</code></td></tr>
+              <tr><td class="k">elevGain</td><td>Desnivell positiu</td><td>Número en metros, p. ej. <code>3900</code></td></tr>
+              <tr><td class="k">elevLoss</td><td>Desnivell negatiu</td><td>Número en metros</td></tr>
+              <tr><td class="k">maxAlt</td><td>Altitud màxima</td><td>Número en metros</td></tr>
+              <tr><td class="k">minAlt</td><td>Altitud mínima</td><td>Número en metros</td></tr>
+              <tr><td class="k">trailRank</td><td>TrailRank</td><td>Número entre 0 y 99</td></tr>
+              <tr><td class="k">routeShape</td><td>Tipus de ruta</td><td>Exactamente <code>"Circular"</code> o <code>"Lineal"</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12.5px; color:var(--ink-faint); margin-top:10px;">Qué GPX o qué JSON alimenta cada dato visible en pantalla, campo a campo: <a href="manual-configuracion.html#mapa-datos">Mapa de datos ↗</a>, en el manual de referencia.</p>
+      </div>
+    </section>
+
+    <!-- ================= TEXTOS E IMÁGENES ================= -->
+    <section class="file-section" id="textos-e-imagenes">
+      <h2 class="file-title"><span class="dot"></span>Textos e imágenes</h2>
+      <p class="file-note">Todo esto vive en <span class="path">rutas/config.json</span> — se edita siempre con el <a href="#patron-editar">Patrón A</a>.</p>
+
+      <div class="recipe-block" id="textos-fijos">
+        <h3 class="recipe-title">05 · Textos fijos</h3>
+        <p class="recipe-when">El título del listado, el nombre del club, el eslogan, el email de contacto y la línea de copyright que aparece al final de las tres pantallas.</p>
+        <a class="ref-pattern" href="#patron-editar"><span class="letter">A</span>Editar un texto</a>
+        <div class="table-scroll">
+          <table class="ref-table">
+            <thead><tr><th>Clave</th><th>Dónde se ve</th><th>Valor actual</th></tr></thead>
+            <tbody>
+              <tr><td class="k">siteTitle</td><td>Título grande del listado de rutas</td><td>"Les teves rutes"</td></tr>
+              <tr><td class="k">orgName</td><td>Texto alternativo del logo; respaldo del copyright si no defines <code>copyrightText</code></td><td>"Club Esportiu Castelldans"</td></tr>
+              <tr><td class="k">orgTagline</td><td>Subtítulo del banner de inicio, si el banner no define el suyo propio</td><td>"ESPORT &amp; NATURA"</td></tr>
+              <tr><td class="k">contactEmail</td><td>Caja "En vols dir alguna cosa?" (solo en inicio)</td><td>"cecastelldans@gmail.com"</td></tr>
+              <tr><td class="k">copyrightText</td><td>Barra de copyright, al final de las tres pantallas</td><td>"©2025 Club Esportiu Castelldans."</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="diff">
+          <div class="row old"><span class="tag">−</span>"contactEmail": "cecastelldans@gmail.com",</div>
+          <div class="row new"><span class="tag">+</span>"contactEmail": "nuevo.correo@club.cat",</div>
+        </div>
+      </div>
+
+      <div class="recipe-block" id="banner-enlaces">
+        <h3 class="recipe-title">06 · Banner y enlaces</h3>
+        <p class="recipe-when">La caja grande de la pantalla de inicio (imagen, título, texto, botón) y los enlaces rápidos que salen debajo ("Enllaços").</p>
+        <a class="ref-pattern" href="#patron-editar"><span class="letter">A</span>Editar un texto</a>
+        <a class="ref-pattern" href="#patron-subir"><span class="letter">B</span>Subir un archivo</a>
+        <p style="font-size:13.5px; color:var(--ink-soft); max-width:66ch; margin:16px 0;">Ambos viven en <code>sections</code>, una lista donde cada elemento es un bloque <code>"type": "banner"</code> (solo puede haber uno, el primero) o <code>"type": "link"</code> (puede haber varios).</p>
+        <div class="diff">
+          <div class="row new">{
+  "type": "banner",
+  "title": "Club Esportiu Castelldans",
+  "body": "Texto largo del club...",
+  "image": "club.avif",
+  "linkLabel": "Vols venir?",
+  "linkUrl": "https://cecastelldans.wixsite.com/..."
+},
+{
+  "type": "link",
+  "label": "Botiga",
+  "url": "https://cecastelldans.wixsite.com/inici/maillot"
+}</div>
+        </div>
+        <div class="callout">Para cambiar la foto del banner: sube la imagen nueva a <span class="path">imgs/</span> con el <a href="#patron-subir">Patrón B</a>, y luego cambia el valor de <code>image</code> por el nombre exacto de ese archivo (Patrón A). Si <code>image</code> no existe o el archivo falla al cargar, se muestra el <code>title</code> en texto en su lugar — nunca se rompe.</div>
+      </div>
+
+      <div class="recipe-block" id="patrocinadores">
+        <h3 class="recipe-title">07 · Patrocinadores</h3>
+        <p class="recipe-when">Añadir, quitar o reemplazar un patrocinador, u ocultar la sección entera sin borrar la lista.</p>
+        <a class="ref-pattern" href="#patron-editar"><span class="letter">A</span>Editar un texto</a>
+        <a class="ref-pattern" href="#patron-subir"><span class="letter">B</span>Subir un archivo</a>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Logo nuevo: súbelo a <span class="path">imgs/patrocinadors/</span> con el <a href="#patron-subir">Patrón B</a>.</span></li>
+          <li><span class="n">2</span><span class="t">Abre <span class="path">rutas/config.json</span> (Patrón A) y añade una entrada en <code>sponsors</code>:<span class="sub">El campo <code>logo</code> es opcional — si lo omites, o el archivo falla al cargar, se muestra el <code>name</code> en texto.</span></span></li>
+        </ol>
+        <div class="diff">
+          <div class="row new">{ "name": "Nuevo Patrocinador", "logo": "patrocinadors/nuevo.avif" }</div>
+        </div>
+        <p style="font-size:13.5px; color:var(--ink-soft); max-width:66ch; margin:14px 0;">Para quitar uno, borra su bloque entero (con su coma) dentro de <code>sponsors</code>. Para ocultar la sección sin perder la lista, pon <code>"showSponsors": false</code> en la raíz del archivo.</p>
+        <div class="diff">
+          <div class="row old"><span class="tag">−</span>"showSponsors": true,</div>
+          <div class="row new"><span class="tag">+</span>"showSponsors": false,</div>
+        </div>
+      </div>
+
+      <div class="recipe-block" id="redes-sociales">
+        <h3 class="recipe-title">08 · Redes sociales</h3>
+        <p class="recipe-when">Añadir, quitar o cambiar el usuario mostrado de una red social en la caja "Segueix-nos" (solo en inicio).</p>
+        <a class="ref-pattern" href="#patron-editar"><span class="letter">A</span>Editar un texto</a>
+        <p style="font-size:13.5px; color:var(--ink-soft); max-width:66ch; margin:16px 0;">Cada entrada de <code>social</code> lleva una red (<code>instagram</code>, <code>x</code>, <code>facebook</code>, <code>strava</code> o <code>youtube</code>) y su URL. El usuario que se muestra se detecta solo del final de la URL — si quieres forzar un texto distinto, añade <code>label</code>.</p>
+        <div class="diff">
+          <div class="row new">{
+  "network": "instagram",
+  "url": "https://www.instagram.com/garriguesbike/",
+  "label": "Garrigues Bike"
+}</div>
+        </div>
+        <p style="font-size:13px; color:var(--ink-faint); margin-top:10px;">Una red no reconocida (fuera de esas cinco) se muestra igualmente, con un icono genérico.</p>
+      </div>
+    </section>
+
+    <!-- ================= APARIENCIA ================= -->
+    <section class="file-section" id="apariencia">
+      <h2 class="file-title"><span class="dot"></span>Apariencia</h2>
+      <div class="recipe-block" id="colores" style="border-top:none; padding-top:0;">
+        <h3 class="recipe-title">09 · Colores del sitio</h3>
+        <p class="recipe-when">Cambiar la paleta de colores de toda la web, en modo claro y modo oscuro a la vez.</p>
+        <a class="ref-pattern" href="#patron-editar"><span class="letter">A</span>Editar un texto</a>
+        <p style="font-size:13.5px; color:var(--ink-soft); max-width:66ch; margin:16px 0;">Los colores no están en <code>config.json</code>, sino en un archivo aparte: <span class="path">rutas/theme.json</span>. Son 12 nombres de color (fondo, texto, botones, bordes...) repetidos una vez para <code>light</code> y otra para <code>dark</code> — la web cambia de uno a otro según el móvil u ordenador de quien la visita.</p>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Abre <span class="path">rutas/theme.json</span> con el <a href="#patron-editar">Patrón A</a>.</span></li>
+          <li><span class="n">2</span><span class="t">Cambia el valor hexadecimal del color que quieras, dentro de <code>"light"</code> o <code>"dark"</code> según toque.<span class="sub">Formato siempre <code>"#rrggbb"</code>, con la almohadilla y las comillas.</span></span></li>
+        </ol>
+        <div class="diff">
+          <div class="row old"><span class="tag">−</span>"primary": "#2563eb",</div>
+          <div class="row new"><span class="tag">+</span>"primary": "#c2410c",</div>
+        </div>
+        <div class="callout warn">Un color mal elegido puede dejar texto ilegible (por ejemplo, letra clara sobre fondo claro). Antes de cambiar varios a la vez, revisa qué controla cada uno de los 12: <a href="manual-configuracion.html#tema-tokens">referencia de colores ↗</a>, con una miniatura señalando dónde se ve cada uno.</div>
+      </div>
+    </section>
+
+    <!-- ================= SI ALGO FALLA ================= -->
+    <section class="file-section" id="problemas">
+      <h2 class="file-title"><span class="dot"></span>Si algo falla</h2>
+      <p class="file-note">Los casos más habituales, y qué hacer en cada uno.</p>
+
+      <div class="recipe-block" style="border-top:none; padding-top:0;">
+        <table class="ref-table">
+          <tbody>
+            <tr>
+              <td class="k" style="width:230px;">La web deja de cargar rutas</td>
+              <td>Casi siempre es un <code>config.json</code> mal formado: una coma de más, una de menos, o una comilla sin cerrar. Entra en <span class="path">rutas/config.json</span> → <span class="gh-chip">History</span> → abre la versión anterior a tu último cambio → <span class="gh-chip">... ▾</span> → <span class="gh-chip">Restore this file</span> (Patrón D). Vuelve a intentar el cambio con más cuidado.</td>
+            </tr>
+            <tr>
+              <td class="k">No veo mi ruta nueva</td>
+              <td>Comprueba en <span class="gh-chip">Actions</span> que el despliegue terminó con un check verde ✅ (puede tardar 1-2 min). Luego recarga forzado con <span class="gh-chip">Ctrl Shift R</span>. Si sigue sin salir, revisa que el archivo esté dentro de <span class="path">rutas/&lt;TIPO&gt;</span> y no suelto en otra carpeta.</td>
+            </tr>
+            <tr>
+              <td class="k">No me aparece el botón verde de commit</td>
+              <td>Tu cuenta de GitHub no tiene permiso de escritura sobre el repositorio todavía. Pide que te añadan en <span class="gh-chip">Settings</span> → <span class="gh-chip">Collaborators</span> (ver <a href="#empezar">Antes de empezar</a>).</td>
+            </tr>
+            <tr>
+              <td class="k">Subí un archivo con el nombre equivocado</td>
+              <td>GitHub no deja renombrar arrastrando: sube el archivo bueno con el <a href="#patron-subir">Patrón B</a> y borra el antiguo con el <a href="#patron-borrar">Patrón C</a> — dos commits, o el mismo commit si subes y borras en la misma pantalla de edición.</td>
+            </tr>
+            <tr>
+              <td class="k">Hice un cambio y quiero deshacerlo</td>
+              <td>Cualquier archivo de texto se puede devolver a una versión anterior sin arreglar nada a mano — ver el bloque "Deshacer" del <a href="#patron-publicar">Patrón D</a>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="end">
+      Guía de gestión web — Club Esportiu Castelldans. Para el detalle campo a campo de <code>config.json</code> y <code>theme.json</code>, con miniaturas de dónde aparece cada valor: <a href="manual-configuracion.html">manual de referencia ↗</a>.
+    </footer>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var STORAGE_KEY = 'manualTheme';
+    var btn = document.getElementById('themeToggle');
+
+    function systemPrefersDark() {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    function currentIsDark() {
+      var forced = root.getAttribute('data-theme');
+      if (forced === 'dark') return true;
+      if (forced === 'light') return false;
+      return systemPrefersDark();
+    }
+    function updateIcon() {
+      btn.textContent = currentIsDark() ? '☾' : '☀︎';
+      btn.setAttribute('aria-label', currentIsDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    }
+
+    var saved = null;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+    if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+    updateIcon();
+
+    btn.addEventListener('click', function () {
+      var next = currentIsDark() ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem(STORAGE_KEY, next); } catch (e) {}
+      updateIcon();
+    });
+  })();
+</script>
