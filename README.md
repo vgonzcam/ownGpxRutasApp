@@ -77,7 +77,7 @@ node scripts/build-manifest.js
 
 ## Configurar la pantalla de inicio (`rutas/config.json`)
 
-- `skin` — piel visual del sitio: `"default"`, `"yellowbird"` o `"glassmorphism"` (por defecto `"default"` si no se define). Ver [Pieles visuales](#pieles-visuales-skins).
+- `skin` — piel visual del sitio: `"default"`, `"yellowbird"`, `"glassmorphism"` o `"claybento"` (por defecto `"default"` si no se define). Ver [Pieles visuales](#pieles-visuales-skins).
 - `siteTitle` — título del listado de rutas (no aparece en la pantalla de inicio; la cabecera de inicio ahora es solo el logo y el botón de tema).
 - `orgName` — nombre del club. No se muestra como texto en pantalla: es el `alt` del logo de la cabecera y el respaldo de `copyrightText`.
 - `orgTagline` — eslogan del club. Se usa como subtítulo del banner de inicio si ese banner no define su propio `subtitle`.
@@ -93,9 +93,16 @@ Todas las imágenes (logo del club, logos de patrocinadores) se guardan en la ca
 
 ## Pieles visuales (skins)
 
-La app es un único `index.html` — los datos y la lógica (parseo de GPX, filtros, pantallas) son siempre los mismos, pero el aspecto se puede cambiar sin tocar código. Hoy hay tres pieles: `default`, `yellowbird` (color plano, contorno negro) y `glassmorphism` (cristal esmerilado sobre fondo degradado).
+La app es un único `index.html` — los datos y la lógica (parseo de GPX, filtros, pantallas) son siempre los mismos, pero el aspecto se puede cambiar sin tocar código. Hoy hay cuatro pieles:
 
-- **Para probar una piel sin cambiar nada**: añade `?skin=yellowbird` o `?skin=glassmorphism` a la URL.
+| Piel | Aspecto | Verla en vivo |
+| --- | --- | --- |
+| `default` | Estilo base, limpio, tarjetas planas | [vgonzcam.github.io/ownGpxRutasApp](https://vgonzcam.github.io/ownGpxRutasApp/) |
+| `yellowbird` | Color plano, contorno negro grueso | [vgonzcam.github.io/ownGpxRutasApp/?skin=yellowbird](https://vgonzcam.github.io/ownGpxRutasApp/?skin=yellowbird) |
+| `glassmorphism` | Cristal esmerilado sobre fondo degradado | [vgonzcam.github.io/ownGpxRutasApp/?skin=glassmorphism](https://vgonzcam.github.io/ownGpxRutasApp/?skin=glassmorphism) |
+| `claybento` | Relieve suave tipo "clay" + inicio en cuadrícula bento | [vgonzcam.github.io/ownGpxRutasApp/?skin=claybento](https://vgonzcam.github.io/ownGpxRutasApp/?skin=claybento) |
+
+- **Para probar una piel sin cambiar nada**: añade `?skin=yellowbird`, `?skin=glassmorphism` o `?skin=claybento` a la URL (enlaces de arriba).
 - **Para fijar la piel del sitio**: añade `"skin": "yellowbird"` en `rutas/config.json` (si no se define, usa `default`).
 
 Cada piel es una entrada del objeto `SKINS` dentro de `index.html`, con su propio `rutas/theme-<piel>.json` (o `rutas/theme.json` para `default`). Para añadir una piel nueva no hace falta duplicar el archivo: se copia una entrada de `SKINS`, se ajustan sus valores (radios, grosor de borde, paleta de insignias por tipo, si el título va en mayúsculas...) y se crea su `theme.json` correspondiente.
@@ -116,7 +123,7 @@ Configuración inicial (una sola vez, manual):
 - `manifest.webmanifest` / `service-worker.js` / `icons/` — soporte PWA
 - `imgs/` — logo del club y logos de patrocinadores, referenciados desde `rutas/config.json`
 - `rutas/config.json` — título del sitio, banner del club, patrocinadores, enlaces, redes sociales (se muestran en la pantalla de inicio y el footer), y qué piel visual usar (`skin`)
-- `rutas/theme.json` / `rutas/theme-yellowbird.json` / `rutas/theme-glassmorphism.json` — colores de cada piel visual (ver [Pieles visuales](#pieles-visuales-skins))
+- `rutas/theme.json` / `rutas/theme-yellowbird.json` / `rutas/theme-glassmorphism.json` / `rutas/theme-claybento.json` — colores de cada piel visual (ver [Pieles visuales](#pieles-visuales-skins))
 - `rutas/manifest.json` — generado automáticamente, no editar a mano
 - `rutas/<TIPO>/*.gpx` — tracks, organizados por tipo
 - `scripts/build-manifest.js` — genera `rutas/manifest.json` recorriendo las carpetas de `rutas/`

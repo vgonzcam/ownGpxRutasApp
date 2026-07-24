@@ -82,6 +82,39 @@
           transition-duration: 0.001ms !important;
         }
       }
+      /* Arcilla: relieve suave con --clay-shadow-* puestas por JS (ver
+         clayShadow() en el script) — solo se usa cuando skin.clay = true. */
+      .clay-tile {
+        box-shadow: var(--clay-shadow);
+      }
+      .clay-interactive {
+        box-shadow: var(--clay-shadow);
+        transition: box-shadow 0.15s;
+      }
+      .clay-interactive:hover {
+        box-shadow: var(--clay-shadow-hover);
+      }
+      .clay-interactive:active {
+        box-shadow: var(--clay-shadow-pressed);
+      }
+      .clay-inset {
+        box-shadow: var(--clay-shadow-inset);
+      }
+      @keyframes revealInset {
+        to {
+          clip-path: inset(0 0 0 0);
+        }
+      }
+      .chart-reveal {
+        clip-path: inset(0 100% 0 0);
+        animation: revealInset 1.1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      @media (max-width: 480px) {
+        .bento-split > * {
+          flex-basis: 100% !important;
+          min-width: 0 !important;
+        }
+      }
       a:focus-visible,
       button:focus-visible,
       input:focus-visible,
@@ -289,6 +322,12 @@
           heroUsesAccent: true,
           glass: false,
           fabGlass: false,
+          homeLayout: "stacked",
+          cardColorMode: "badge",
+          clay: false,
+          chartReveal: false,
+          statTileRoles: false,
+          detailChartBg: "hero",
         },
         yellowbird: {
           themeFile: "rutas/theme-yellowbird.json",
@@ -319,6 +358,12 @@
           heroUsesAccent: true,
           glass: false,
           fabGlass: false,
+          homeLayout: "stacked",
+          cardColorMode: "badge",
+          clay: false,
+          chartReveal: false,
+          statTileRoles: false,
+          detailChartBg: "hero",
         },
         glassmorphism: {
           themeFile: "rutas/theme-glassmorphism.json",
@@ -369,6 +414,57 @@
               "radial-gradient(at 10% 90%, #A21CAF 0%, transparent 55%)," +
               "linear-gradient(#0F0B1E, #0F0B1E)",
           },
+          homeLayout: "stacked",
+          cardColorMode: "badge",
+          clay: false,
+          chartReveal: false,
+          statTileRoles: false,
+          detailChartBg: "hero",
+        },
+        claybento: {
+          themeFile: "rutas/theme-claybento.json",
+          cardRadius: "14px",
+          statRadius: "14px",
+          badgeRadius: "999px",
+          borderWidth: "0",
+          // Misma paleta que yellowbird — ya verificada: las 9 pasan ≥4.5:1
+          // con texto casi negro, y aquí ese texto cubre la tarjeta entera,
+          // no solo una insignia.
+          typeAccentColors: [
+            "#06B6D4",
+            "#5AC8FA",
+            "#FF9F1C",
+            "#7ED957",
+            "#FF6B9D",
+            "#B892FF",
+            "#4CD4B0",
+            "#FFB4A2",
+            "#C9A24B",
+          ],
+          typeAccentFg: "#171717",
+          headingUppercase: false,
+          ctaBorder: false,
+          fabBadgeUsesAccent: false,
+          heroUsesAccent: true,
+          glass: false,
+          fabGlass: false,
+          // "bento": el inicio es un mosaico de bloques de color en vez de
+          // una columna apilada; "full": la tarjeta de ruta entera es del
+          // color del tipo, no solo una insignia pequeña.
+          homeLayout: "bento",
+          cardColorMode: "full",
+          clay: true,
+          chartReveal: true,
+          // Navy fijo para el trazado del mini-mapa y la caja "Segueix-nos"
+          // del inicio — no cambia entre claro/oscuro ni depende de primary,
+          // así se ve igual de nítido sobre cualquiera de las 9 del tipo.
+          navyColor: "#0B2A4A",
+          // El detalle también es bento: el gráfico va en blanco (no en el
+          // amarillo de acento), y las 4 tarjetas de estadística llevan un
+          // color fijo cada una (azul/amarillo/tostado/rojo) en vez de ser
+          // todas iguales salvo la de dificultad.
+          statTileRoles: true,
+          detailChartBg: "card",
         },
       };
       let activeSkin = SKINS.default;
@@ -513,6 +609,10 @@
             chipFgActive: rgbStr(palette.light.primaryForeground),
             buttonBg: rgbStr(palette.light.primary),
             buttonFg: rgbStr(palette.light.primaryForeground),
+            destructiveBg: rgbStr(palette.light.destructive),
+            destructiveFg: rgbStr(palette.light.destructiveForeground),
+            accentBg: rgbStr(palette.light.accent),
+            accentFg: rgbStr(palette.light.accentForeground),
             areaFill: rgbStr(palette.light.primary, 0.65),
             // lineStroke/linkColor son opcionales en theme.json: si no se
             // definen, se derivan como siempre (primary / accentForeground).
@@ -551,6 +651,10 @@
             chipFgActive: rgbStr(palette.dark.primaryForeground),
             buttonBg: rgbStr(palette.dark.primary),
             buttonFg: rgbStr(palette.dark.primaryForeground),
+            destructiveBg: rgbStr(palette.dark.destructive),
+            destructiveFg: rgbStr(palette.dark.destructiveForeground),
+            accentBg: rgbStr(palette.dark.accent),
+            accentFg: rgbStr(palette.dark.accentForeground),
             areaFill: rgbStr(palette.dark.primary, 0.3),
             lineStroke: palette.dark.lineStroke
               ? rgbStr(palette.dark.lineStroke)
@@ -1118,6 +1222,27 @@
       function glassClass() {
         return activeSkin.glass ? " glass" : "";
       }
+      // Sombra de "arcilla": relieve suave con un tinte cálido oscuro, tres
+      // variantes (reposo/hover/pulsado) — solo se usa si skin.clay = true.
+      function clayShadow(kind) {
+        if (kind === "pressed")
+          return "0 2px 5px rgba(40,26,10,0.05), inset 0 3px 6px rgba(0,0,0,0.06), inset 0 -1px 3px rgba(255,255,255,0.1)";
+        if (kind === "hover")
+          return "0 8px 16px rgba(40,26,10,0.07), inset 0 -2px 5px rgba(0,0,0,0.03), inset 0 2px 5px rgba(255,255,255,0.22)";
+        if (kind === "inset")
+          return "inset 0 1px 4px rgba(40,26,10,0.045), inset 0 -1px 2px rgba(255,255,255,0.2)";
+        return "0 5px 12px rgba(40,26,10,0.05), inset 0 -2px 5px rgba(0,0,0,0.03), inset 0 2px 5px rgba(255,255,255,0.18)";
+      }
+      function clayClass(interactive) {
+        return activeSkin.clay ? (interactive ? " clay-interactive" : " clay-tile") : "";
+      }
+      // El box-shadow en línea (theme.shadowCard) tapa siempre a la regla de
+      // la clase .clay-tile/.clay-interactive por especificidad — con arcilla
+      // activa hay que omitir el box-shadow en línea del todo (no vale
+      // "none": también tapa) y dejar que la clase ponga la sombra real.
+      function tileShadowCss(theme) {
+        return activeSkin.clay ? "" : `box-shadow:${theme.shadowCard};`;
+      }
 
       function render() {
         const app = document.getElementById("app");
@@ -1162,6 +1287,17 @@
           root.style.removeProperty("--fab-border");
           root.style.removeProperty("--fab-shadow");
         }
+        if (activeSkin.clay) {
+          root.style.setProperty("--clay-shadow", clayShadow());
+          root.style.setProperty("--clay-shadow-hover", clayShadow("hover"));
+          root.style.setProperty("--clay-shadow-pressed", clayShadow("pressed"));
+          root.style.setProperty("--clay-shadow-inset", clayShadow("inset"));
+        } else {
+          root.style.removeProperty("--clay-shadow");
+          root.style.removeProperty("--clay-shadow-hover");
+          root.style.removeProperty("--clay-shadow-pressed");
+          root.style.removeProperty("--clay-shadow-inset");
+        }
 
         const searchWasFocused =
           document.activeElement && document.activeElement.id === "searchInput";
@@ -1198,10 +1334,10 @@
           state.themeName === "light"
             ? `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="${theme.textPrimary}" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"></path></svg>`
             : `<svg viewBox="0 0 24 24" width="18" height="18" fill="${theme.textPrimary}"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1Z"></path></svg>`;
-        const themeToggleHtml = `<div id="themeToggle" tabindex="0" role="button" aria-label="Canvia el tema" title="Canvia el tema" class="${glassClass().trim()}" style="cursor:pointer;flex-shrink:0;width:40px;height:40px;border-radius:50%;background:${theme.chipBg};display:flex;align-items:center;justify-content:center;">${themeIconHtml}</div>`;
+        const themeToggleHtml = `<div id="themeToggle" tabindex="0" role="button" aria-label="Canvia el tema" title="Canvia el tema" class="${(glassClass()+clayClass(true)).trim()}" style="cursor:pointer;flex-shrink:0;width:40px;height:40px;border-radius:50%;background:${theme.chipBg};display:flex;align-items:center;justify-content:center;">${themeIconHtml}</div>`;
         function headerBarHtml(backId, backLabel) {
           const backHtml = backId
-            ? `<div id="${backId}" tabindex="0" role="button" class="back-btn" style="cursor:pointer;flex-shrink:0;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;">${backLabel}</span></div>`
+            ? `<div id="${backId}" tabindex="0" role="button" class="back-btn${clayClass(true)}" style="cursor:pointer;flex-shrink:0;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;color:${theme.textPrimary};${activeSkin.clay ? `background:${theme.cardBg};border-radius:10px;padding:0 14px;gap:6px;width:auto;` : ""}">←<span class="back-label" style="font-size:13px;font-weight:600;font-family:'Space Grotesk',sans-serif;${activeSkin.clay ? "display:inline;" : ""}">${backLabel}</span></div>`
             : "";
           return `<div class="${glassClass().trim()}" style="display:flex;align-items:center;padding:14px 24px;background:${theme.chromeBg};border-bottom:1px solid ${theme.border};margin-bottom:20px;">
       ${backHtml}
@@ -1252,7 +1388,7 @@
           : "";
 
         const sponsorsBoxHtml = sponsors.length
-          ? `<div class="${glassClass().trim()}" style="margin-top:20px;background:${theme.sponsorBg};border:${activeSkin.glass ? activeSkin.borderWidth + " solid " + theme.border : "none"};border-radius:${activeSkin.cardRadius};padding:20px;">
+          ? `<div class="${(glassClass()+clayClass()).trim()}" style="margin-top:20px;background:${theme.sponsorBg};border:${activeSkin.glass ? activeSkin.borderWidth + " solid " + theme.border : "none"};border-radius:${activeSkin.cardRadius};padding:20px;">
     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:${theme.textTertiary};margin-bottom:12px;">Patrocinadors</div>
     <div class="sponsors-grid">
       ${sponsors
@@ -1265,7 +1401,7 @@
           const hrefAttr = sp.url
             ? ` href="${sp.url}" target="_blank" rel="noopener"`
             : "";
-          return `<${tag}${hrefAttr} class="${glassClass().trim()}" style="text-decoration:none;text-align:center;font-size:12px;font-weight:600;color:${theme.linkColor};background:${theme.cardBg};border:${activeSkin.glass ? activeSkin.borderWidth + " solid " + theme.border : "none"};padding:10px 8px;border-radius:8px;display:flex;align-items:center;justify-content:center;min-height:44px;box-shadow:${theme.shadowCard};">${content}</${tag}>`;
+          return `<${tag}${hrefAttr} class="${(glassClass()+clayClass()).trim()}" style="text-decoration:none;text-align:center;font-size:12px;font-weight:600;color:${theme.linkColor};background:${theme.cardBg};border:${activeSkin.glass ? activeSkin.borderWidth + " solid " + theme.border : "none"};padding:10px 8px;border-radius:8px;display:flex;align-items:center;justify-content:center;min-height:44px;${tileShadowCss(theme)}">${content}</${tag}>`;
         })
         .join("")}
     </div>
@@ -1289,6 +1425,70 @@
     </div>
   </div>`
             : "";
+
+        if (state.screen === "home" && activeSkin.homeLayout === "bento") {
+          const banner = sections.find((s) => s.type === "banner");
+          const pillOnDark = `font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,0.14);color:#FFF9EC;`;
+          const pillOnMuted = `font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,0.08);color:inherit;`;
+          const bannerTile = banner
+            ? `<div class="clay-tile" style="background:${theme.buttonBg};color:${theme.buttonFg};border-radius:${activeSkin.cardRadius};padding:24px;">
+        ${banner.title ? `<div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:500;margin-bottom:10px;">${banner.title}</div>` : ""}
+        <div style="font-family:'Poppins',sans-serif;font-size:14px;line-height:1.65;white-space:pre-line;opacity:0.9;">${banner.body || ""}</div>
+        ${banner.linkUrl ? `<a href="${banner.linkUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-top:14px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:inherit;border-bottom:2px solid currentColor;padding-bottom:2px;">${banner.linkLabel || "Més informació"} ↗</a>` : ""}
+      </div>`
+            : "";
+          const socialTile = social.length
+            ? `<div class="clay-tile" style="background:${activeSkin.navyColor};color:#FFF9EC;border-radius:${activeSkin.cardRadius};padding:24px;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:500;margin-bottom:16px;">Segueix-nos</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          ${social.map((s) => `<a href="${s.url}" target="_blank" rel="noopener" style="${pillOnDark}">${s.label || socialHandle(s.url)}</a>`).join("")}
+        </div>
+      </div>`
+            : "";
+          const linksTile = quickLinks.length
+            ? `<div class="clay-tile" style="background:${theme.sponsorBg};color:${theme.textPrimary};border-radius:${activeSkin.cardRadius};padding:24px;flex:2;min-width:200px;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:500;margin-bottom:12px;">Enllaços</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${quickLinks.map((l) => `<a href="${l.url}" target="_blank" rel="noopener" style="${pillOnMuted}">${l.label || ""}</a>`).join("")}
+        </div>
+      </div>`
+            : "";
+          const contactTile = `<div class="clay-tile" style="background:${theme.destructiveBg};color:${theme.destructiveFg};border-radius:${activeSkin.cardRadius};padding:24px;flex:1;min-width:160px;">
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;">Contacte</div>
+        ${contactEmail ? `<a href="mailto:${contactEmail}" style="font-family:'Poppins',sans-serif;font-size:13px;color:inherit;opacity:0.9;overflow-wrap:anywhere;">${contactEmail}</a>` : ""}
+      </div>`;
+
+          app.innerHTML = `<div class="screen${glassClass()}" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding:calc(28px + env(safe-area-inset-top)) 0 40px 0;">
+      ${headerBarHtml(null, null)}
+      <div class="container-narrow" style="padding:0 24px;display:flex;flex-direction:column;gap:16px;">
+        <div class="bento-split" style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch;">
+          <div class="clay-tile" style="background:${theme.cardBg};color:${theme.textPrimary};border-radius:${activeSkin.cardRadius};padding:24px;flex:2;min-width:280px;">
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:clamp(34px,6vw,50px);line-height:1.05;margin-bottom:10px;">${orgName}</div>
+            <div style="font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;opacity:0.6;">${orgTagline}</div>
+          </div>
+          <div id="goList" tabindex="0" role="button" class="clay-interactive" style="cursor:pointer;background:${theme.heroBg};color:${activeSkin.typeAccentFg};border-radius:${activeSkin.cardRadius};padding:24px;flex:1;min-width:220px;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;opacity:0.65;">${decorated.length} rutes disponibles</div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:18px;">
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:500;">Rutes</div>
+              <div style="font-size:26px;">→</div>
+            </div>
+          </div>
+        </div>
+        ${bannerTile}
+        ${socialTile}
+        <div class="bento-split" style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${linksTile}
+          ${contactTile}
+        </div>
+        ${sponsorsBoxHtml}
+      </div>
+      ${bottomBarHtml()}
+    </div></div>`;
+
+          bindActivate(document.getElementById("themeToggle"), toggleTheme);
+          bindActivate(document.getElementById("goList"), showList);
+          return;
+        }
 
         if (state.screen === "home") {
           const bannerHtml = sections
@@ -1329,7 +1529,7 @@
       <div class="container-narrow" style="padding:0 24px;">
         ${installBannerHtml}
         ${bannerHtml}
-        <div id="goList" tabindex="0" role="button" style="cursor:pointer;background:${theme.buttonBg};color:${theme.buttonFg};${activeSkin.ctaBorder ? `border:${activeSkin.borderWidth} solid ${theme.border};` : ""}${activeSkin.glass ? `box-shadow:${theme.shadowCard};` : ""}text-align:center;padding:16px;border-radius:${activeSkin.statRadius};font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;margin-bottom:8px;">Veure les rutes</div>
+        <div id="goList" tabindex="0" role="button" class="${clayClass(true).trim()}" style="cursor:pointer;background:${theme.buttonBg};color:${theme.buttonFg};${activeSkin.ctaBorder ? `border:${activeSkin.borderWidth} solid ${theme.border};` : ""}${activeSkin.clay ? "" : activeSkin.glass ? `box-shadow:${theme.shadowCard};` : ""}text-align:center;padding:16px;border-radius:${activeSkin.statRadius};font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;margin-bottom:8px;">Veure les rutes</div>
         ${sponsorsBoxHtml}
         ${socialBoxHtml}
         ${footerHtml}
@@ -1431,10 +1631,31 @@
             "elevation",
           );
 
-          const cards = filtered
-            .map(
-              (r) => `
-      <div class="card${glassClass()}" tabindex="0" data-id="${r.id}" style="cursor:pointer;background:${theme.cardBg};border-radius:${activeSkin.cardRadius};overflow:hidden;border:${activeSkin.borderWidth} solid ${theme.border};box-shadow:${theme.shadowCard};">
+          const fullColorCardHtml = (r) => {
+            const bg = typeAccentBg(r.trackType);
+            const fg = activeSkin.typeAccentFg;
+            return `
+      <div class="card${clayClass(true)}" tabindex="0" data-id="${r.id}" style="cursor:pointer;background:${bg};color:${fg};border-radius:${activeSkin.cardRadius};overflow:hidden;padding:16px 18px 18px 18px;${tileShadowCss(theme)}">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,0.12);">${r.trackType}</div>
+          <div style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,0.08);">${r.difficultyLabel}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.07);border-radius:10px;padding:10px;margin:10px 0;">
+          <svg viewBox="0 0 300 130" style="width:100%;height:110px;display:block;">
+            <polyline points="${r.shapePoints}" fill="none" stroke="${activeSkin.navyColor}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          </svg>
+        </div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;padding:2px 0 4px 0;border-bottom:3px solid rgba(0,0,0,0.18);display:inline-block;">${r.name}</div>
+        <div style="font-size:13px;opacity:0.7;margin:8px 0 10px 0;">${r.location}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <div style="font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,0.1);">${r.distanceKm} km</div>
+          <div style="font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,0.1);">+${r.elevGain} m</div>
+          <div style="font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,0.1);">${r.duration}</div>
+        </div>
+      </div>`;
+          };
+          const badgeCardHtml = (r) => `
+      <div class="card${glassClass()}${clayClass(true)}" tabindex="0" data-id="${r.id}" style="cursor:pointer;background:${theme.cardBg};border-radius:${activeSkin.cardRadius};overflow:hidden;border:${activeSkin.borderWidth} solid ${theme.border};${tileShadowCss(theme)}">
         <div style="height:130px;background:${theme.heroBg};display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;">
           <svg viewBox="0 0 300 130" style="width:100%;height:100%;display:block;">
             <polyline points="${r.shapePoints}" fill="none" stroke="${theme.lineStroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
@@ -1453,7 +1674,12 @@
             <div style="font-size:13px;color:${theme.textTertiary};"><b style="font-family:'Space Grotesk',sans-serif;color:${theme.textPrimary};">${r.duration}</b></div>
           </div>
         </div>
-      </div>`,
+      </div>`;
+          const cards = filtered
+            .map((r) =>
+              activeSkin.cardColorMode === "full"
+                ? fullColorCardHtml(r)
+                : badgeCardHtml(r),
             )
             .join("");
 
@@ -1468,7 +1694,7 @@
             state.filterElevations.size;
           const moreFiltersHtml = state.moreFiltersOpen
             ? `
-      <div id="moreFiltersPanel" class="${glassClass().trim()}" style="background:${theme.chipBg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;margin-bottom:16px;">
+      <div id="moreFiltersPanel" class="${(glassClass()+clayClass()).trim()}" style="background:${theme.chipBg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;margin-bottom:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div style="font-size:13px;font-weight:700;color:${theme.textPrimary};">Filtres avançats</div>
           <div id="clearMoreFiltersBtn" tabindex="0" role="button" style="cursor:pointer;font-size:12px;font-weight:600;color:${theme.linkColor};">Esborrar filtres</div>
@@ -1488,7 +1714,7 @@
         <div style="font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;${headingSkinCss()}color:${theme.textPrimary};margin-bottom:4px;">${siteTitle}</div>
         <div style="font-size:14px;color:${theme.textSecondary};margin:0 0 18px 0;">${decorated.length} ${decorated.length === 1 ? "ruta carregada" : "rutes carregades"}</div>
         <div style="margin-bottom:16px;">
-          <input id="searchInput" class="${glassClass().trim()}" type="text" placeholder="Cerca per nom o ubicació…" value="${state.searchText.replace(/"/g, "&quot;")}" style="width:100%;box-sizing:border-box;padding:11px 14px;border-radius:12px;border:${activeSkin.borderWidth} solid ${theme.border};background:${theme.cardBg};color:${theme.textPrimary};font-size:14px;font-family:inherit;outline:none;--ph-color:${theme.textTertiary};" />
+          <input id="searchInput" class="${(glassClass()+(activeSkin.clay ? " clay-inset" : "")).trim()}" type="text" placeholder="Cerca per nom o ubicació…" value="${state.searchText.replace(/"/g, "&quot;")}" style="width:100%;box-sizing:border-box;padding:11px 14px;border-radius:12px;border:${activeSkin.borderWidth} solid ${theme.border};background:${theme.cardBg};color:${theme.textPrimary};font-size:14px;font-family:inherit;outline:none;--ph-color:${theme.textTertiary};" />
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">${typeChips}</div>
         <div id="moreFiltersToggle" tabindex="0" role="button" class="filter-toggle-desktop" style="cursor:pointer;font-size:12px;font-weight:600;color:${theme.linkColor};margin-bottom:16px;">${state.moreFiltersOpen ? "Menys filtres ↑" : "Més filtres (dificultat, distància, desnivell) ↓"}</div>
@@ -1553,6 +1779,37 @@
 
         const r = decorated.find((x) => x.id === state.selected);
         const chart = chartData(r.profile);
+        // statTileRoles: las 4 tarjetas llevan un color fijo cada una
+        // (distancia/desnivell/durada/dificultat), no solo la de dificultat —
+        // así lo pide el bento. El resto de pieles siguen como siempre:
+        // las tres primeras neutras, solo la de dificultat coloreada según
+        // el nivel real de la ruta.
+        const distTile = activeSkin.statTileRoles
+          ? { bg: theme.buttonBg, fg: theme.buttonFg }
+          : { bg: theme.cardBg, fg: theme.textPrimary };
+        const elevTile = activeSkin.statTileRoles
+          ? { bg: theme.accentBg, fg: theme.accentFg }
+          : { bg: theme.cardBg, fg: theme.lineStroke };
+        const durTile = activeSkin.statTileRoles
+          ? { bg: theme.sponsorBg, fg: theme.textPrimary }
+          : { bg: theme.cardBg, fg: theme.textPrimary };
+        const diffTile = activeSkin.statTileRoles
+          ? { bg: theme.destructiveBg, fg: theme.destructiveFg }
+          : { bg: r.difficultyBg, fg: r.difficultyFg };
+        const statIcon = {
+          distance:
+            '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="5" cy="19" r="2.3" fill="currentColor"></circle><circle cx="19" cy="5" r="2.3" fill="currentColor"></circle><line x1="7" y1="17" x2="17" y2="7" stroke="currentColor" stroke-width="2"></line></svg>',
+          elevation:
+            '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 19 L10 7 L14 13 L17 9 L21 19 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>',
+          duration:
+            '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"></circle><line x1="12" y1="12" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line><line x1="12" y1="12" x2="16" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line></svg>',
+          difficulty:
+            '<svg viewBox="0 0 24 24" width="14" height="14"><line x1="5" y1="3" x2="5" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line><path d="M5 4 L18 4 L14 8 L18 12 L5 12 Z" fill="currentColor"></path></svg>',
+        };
+        const statLabelHtml = (icon, label, fg) =>
+          activeSkin.statTileRoles
+            ? `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;color:${fg};opacity:0.85;">${statIcon[icon]}<span style="font-size:11px;">${label}</span></div>`
+            : `<div style="font-size:12px;color:${theme.textSecondary};margin-bottom:6px;">${label}</div>`;
         app.innerHTML = `<div class="screen${glassClass()}" style="background:${theme.screenBg}"><div style="position:absolute;inset:0;overflow-y:auto;padding:calc(28px + env(safe-area-inset-top)) 0 32px 0;">
     ${headerBarHtml("backBtn", "Rutes")}
     <div class="container-narrow" style="padding:0 24px 20px 24px;">
@@ -1560,8 +1817,8 @@
       <div style="font-size:14px;color:${theme.textSecondary};">${r.location}</div>
     </div>
     <div class="container-narrow" style="padding:0 24px 20px 24px;">
-      <div class="${glassClass().trim()}" style="height:220px;position:relative;background:${theme.heroBg};border-radius:${activeSkin.cardRadius};overflow:hidden;border:${activeSkin.borderWidth} solid ${theme.border};box-shadow:${theme.shadowCard};">
-        <svg viewBox="0 0 300 130" preserveAspectRatio="none" style="width:100%;height:100%;display:block;">
+      <div class="${(glassClass()+clayClass()).trim()}" style="height:220px;position:relative;background:${activeSkin.detailChartBg === "card" ? theme.cardBg : theme.heroBg};border-radius:${activeSkin.cardRadius};overflow:hidden;border:${activeSkin.borderWidth} solid ${theme.border};${tileShadowCss(theme)}">
+        <svg viewBox="0 0 300 130" preserveAspectRatio="none" class="${activeSkin.chartReveal ? "chart-reveal" : ""}" style="width:100%;height:100%;display:block;">
           <path d="${chart.areaPath}" fill="${theme.areaFill}" stroke="none"></path>
           <path d="${chart.linePath}" fill="none" stroke="${theme.lineStroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
         </svg>
@@ -1573,19 +1830,19 @@
     <div class="container-narrow" style="padding:0 24px 24px 24px;">
       <div style="font-size:13px;font-weight:600;color:${theme.textSecondary};text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;">Estadístiques de la ruta</div>
       <div class="stats-hero" style="margin-bottom:12px;">
-        <div class="${glassClass().trim()}" style="background:${theme.cardBg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;box-shadow:${theme.shadowCard};"><div style="font-size:12px;color:${theme.textSecondary};margin-bottom:6px;">Distància</div><div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:${theme.textPrimary};">${r.distanceKm} <span style="font-size:14px;font-weight:600;">km</span></div></div>
-        <div class="${glassClass().trim()}" style="background:${theme.cardBg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;box-shadow:${theme.shadowCard};"><div style="font-size:12px;color:${theme.textSecondary};margin-bottom:6px;">Desnivell positiu</div><div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:${theme.lineStroke};">+${r.elevGain} <span style="font-size:14px;font-weight:600;">m</span></div></div>
-        <div class="${glassClass().trim()}" style="background:${theme.cardBg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;box-shadow:${theme.shadowCard};"><div style="font-size:12px;color:${theme.textSecondary};margin-bottom:6px;">Durada estimada</div><div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:${theme.textPrimary};">${r.duration}</div></div>
-        <div style="background:${r.difficultyBg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;box-shadow:${theme.shadowCard};"><div style="font-size:12px;color:${r.difficultyFg};opacity:0.75;margin-bottom:6px;">Dificultat</div><div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:${r.difficultyFg};">${r.difficultyLabel}</div></div>
+        <div class="${(glassClass()+clayClass()).trim()}" style="background:${distTile.bg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;${tileShadowCss(theme)}">${statLabelHtml("distance", "Distància", distTile.fg)}<div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:${distTile.fg};">${r.distanceKm} <span style="font-size:14px;font-weight:600;">km</span></div></div>
+        <div class="${(glassClass()+clayClass()).trim()}" style="background:${elevTile.bg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;${tileShadowCss(theme)}">${statLabelHtml("elevation", "Desnivell +", elevTile.fg)}<div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:${elevTile.fg};">+${r.elevGain} <span style="font-size:14px;font-weight:600;">m</span></div></div>
+        <div class="${(glassClass()+clayClass()).trim()}" style="background:${durTile.bg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;${tileShadowCss(theme)}">${statLabelHtml("duration", "Durada estimada", durTile.fg)}<div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:${durTile.fg};">${r.duration}</div></div>
+        <div class="${clayClass().trim()}" style="background:${diffTile.bg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};padding:16px;${tileShadowCss(theme)}">${statLabelHtml("difficulty", "Dificultat", diffTile.fg)}<div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:${diffTile.fg};">${r.difficultyLabel}</div></div>
       </div>
-      <div class="${glassClass().trim()}" style="background:${theme.cardBg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};overflow:hidden;margin-bottom:16px;box-shadow:${theme.shadowCard};">
+      <div class="${(glassClass()+clayClass()).trim()}" style="background:${theme.cardBg};border:${activeSkin.borderWidth} solid ${theme.border};border-radius:${activeSkin.statRadius};overflow:hidden;margin-bottom:16px;${tileShadowCss(theme)}">
         <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid ${theme.border};"><span style="font-size:13px;color:${theme.textSecondary};">Tipus de ruta</span><span style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:${theme.textPrimary};">${r.routeShape}</span></div>
         <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid ${theme.border};"><span style="font-size:13px;color:${theme.textSecondary};">Desnivell negatiu</span><span style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:${theme.textPrimary};">${r.elevLoss} m</span></div>
         <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid ${theme.border};"><span style="font-size:13px;color:${theme.textSecondary};">Altitud màxima</span><span style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:${theme.textPrimary};">${r.maxAlt} m</span></div>
         <div style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid ${theme.border};"><span style="font-size:13px;color:${theme.textSecondary};">Altitud mínima</span><span style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:${theme.textPrimary};">${r.minAlt} m</span></div>
         <div style="display:flex;justify-content:space-between;padding:13px 16px;"><span style="font-size:13px;color:${theme.textSecondary};">TrailRank</span><span style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;color:${theme.textPrimary};">${r.trailRank}</span></div>
       </div>
-      <a href="${r.externalUrl}" target="_blank" rel="noopener" style="text-decoration:none;background:${theme.buttonBg};${activeSkin.ctaBorder ? `border:${activeSkin.borderWidth} solid ${theme.border};` : ""}${activeSkin.glass ? `box-shadow:${theme.shadowCard};` : ""}border-radius:${activeSkin.statRadius};padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:${theme.buttonFg};margin-bottom:16px;">Veure al mapa ↗</a>
+      <a href="${r.externalUrl}" target="_blank" rel="noopener" class="${clayClass(true).trim()}" style="text-decoration:none;background:${activeSkin.navyColor || theme.buttonBg};${activeSkin.ctaBorder ? `border:${activeSkin.borderWidth} solid ${theme.border};` : ""}${activeSkin.clay ? "" : activeSkin.glass ? `box-shadow:${theme.shadowCard};` : ""}border-radius:${activeSkin.statRadius};padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:${activeSkin.navyColor ? "#FFF9EC" : theme.buttonFg};margin-bottom:16px;">Veure al mapa ↗</a>
       ${sponsorsBoxHtml}
     </div>
     ${bottomBarHtml()}
