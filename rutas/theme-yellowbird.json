@@ -3,8 +3,8 @@
     "background": "#FFF9EC",
     "foreground": "#111111",
     "card": "#FFFFFF",
-    "primary": "#007AFF",
-    "primaryForeground": "#111111",
+    "primary": "#0062CC",
+    "primaryForeground": "#FFFFFF",
     "muted": "#F1EDE3",
     "mutedForeground": "#5B5850",
     "accent": "#FFD23F",
@@ -25,6 +25,7 @@
     "accentForeground": "#111111",
     "destructive": "#FF3B30",
     "destructiveForeground": "#111111",
-    "border": "#334155"
+    "border": "#334155",
+    "linkColor": "#60A5FA"
   }
 }

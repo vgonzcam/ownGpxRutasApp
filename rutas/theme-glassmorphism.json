@@ -11,7 +11,9 @@
     "accentForeground": "#14142B",
     "destructive": "#F43F5E",
     "destructiveForeground": "#14142B",
-    "border": "#FFFFFF"
+    "border": "#FFFFFF",
+    "lineStroke": "#5B21B6",
+    "linkColor": "#14142B"
   },
   "dark": {
     "background": "#0F0B1E",
@@ -25,6 +27,8 @@
     "accentForeground": "#14142B",
     "destructive": "#F43F5E",
     "destructiveForeground": "#14142B",
-    "border": "#FFFFFF"
+    "border": "#FFFFFF",
+    "lineStroke": "#A78BFA",
+    "linkColor": "#F5F3FF"
   }
 }

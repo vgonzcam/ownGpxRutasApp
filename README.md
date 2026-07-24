@@ -2,15 +2,15 @@
 
 ## Documentación
 
-| Documento                                     | Qué explica                                                                                                                                                      | Dónde verlo                                                                                                                                                 |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `README.md`                                   | Correr en local, estructura del proyecto, cómo configurar `rutas/config.json`, despliegue                                                                        | Este mismo archivo                                                                                                                                          |
-| Guía de gestión (paso a paso, solo navegador) | Cómo añadir/eliminar rutas, corregir datos, cambiar textos, patrocinadores, redes sociales y colores — todo desde github.com, explicado para quien no conoce Git | [vgonzcam.github.io/ownGpxRutasApp/guia-gestion-rutas.html](https://vgonzcam.github.io/ownGpxRutasApp/guia-gestion-rutas.html) (tras el próximo deploy)     |
-| Manual de referencia de configuración         | Campo a campo de `rutas/config.json` y `rutas/theme.json`, con miniaturas de la app señalando dónde aparece cada valor                                           | [vgonzcam.github.io/ownGpxRutasApp/manual-configuracion.html](https://vgonzcam.github.io/ownGpxRutasApp/manual-configuracion.html) (tras el próximo deploy) |
-| [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md)  | Redirige a la guía de gestión — por si navegas el repo sin tener la web desplegada                                                                               | [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md) en este repo                                                                                                   |
-| La app                                        | La web de rutas en sí                                                                                                                                            | [vgonzcam.github.io/ownGpxRutasApp](https://vgonzcam.github.io/ownGpxRutasApp/)                                                                             |
+| Documento                                     | Qué explica                                                                                                                                                      | Dónde verlo                                                                                                                        |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `README.md`                                   | Correr en local, estructura del proyecto, cómo configurar `rutas/config.json`, despliegue                                                                        | Este mismo archivo                                                                                                                 |
+| Guía de gestión (paso a paso, solo navegador) | Cómo añadir/eliminar rutas, corregir datos, cambiar textos, patrocinadores, redes sociales y colores — todo desde github.com, explicado para quien no conoce Git | [vgonzcam.github.io/ownGpxRutasApp/guia-gestion-rutas.html](https://vgonzcam.github.io/ownGpxRutasApp/guia-gestion-rutas.html)     |
+| Manual de referencia de configuración         | Campo a campo de `rutas/config.json` y `rutas/theme.json`, con miniaturas de la app señalando dónde aparece cada valor                                           | [vgonzcam.github.io/ownGpxRutasApp/manual-configuracion.html](https://vgonzcam.github.io/ownGpxRutasApp/manual-configuracion.html) |
+| [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md)  | Redirige a la guía de gestión — por si navegas el repo sin tener la web desplegada                                                                               | [MANUAL-NUEVA-RUTA.md](MANUAL-NUEVA-RUTA.md) en este repo                                                                          |
+| La app                                        | La web de rutas en sí — con selector de piel visual, ver [Pieles](#pieles-visuales-skins) más abajo                                                              | [vgonzcam.github.io/ownGpxRutasApp](https://vgonzcam.github.io/ownGpxRutasApp/)                                                    |
 
-Las dos últimas filas son páginas del propio sitio (GitHub Pages), no archivos que se abran desde el repositorio.
+Todas las filas con enlace a `vgonzcam.github.io` son páginas del propio sitio publicado (GitHub Pages); `README.md` y `MANUAL-NUEVA-RUTA.md` son archivos que se abren directamente desde el repositorio.
 
 ## Cómo correrlo en local
 
@@ -77,6 +77,7 @@ node scripts/build-manifest.js
 
 ## Configurar la pantalla de inicio (`rutas/config.json`)
 
+- `skin` — piel visual del sitio: `"default"`, `"yellowbird"` o `"glassmorphism"` (por defecto `"default"` si no se define). Ver [Pieles visuales](#pieles-visuales-skins).
 - `siteTitle` — título del listado de rutas (no aparece en la pantalla de inicio; la cabecera de inicio ahora es solo el logo y el botón de tema).
 - `orgName` — nombre del club. No se muestra como texto en pantalla: es el `alt` del logo de la cabecera y el respaldo de `copyrightText`.
 - `orgTagline` — eslogan del club. Se usa como subtítulo del banner de inicio si ese banner no define su propio `subtitle`.
@@ -89,6 +90,15 @@ node scripts/build-manifest.js
 - `sponsors` — cada uno `{ "name": "...", "url": "...", "logo": "archivo.png" }`. El campo `logo` es opcional: si lo pones, coloca la imagen en `imgs/`; si no existe o falla al cargar, se muestra el nombre en texto automáticamente.
 
 Todas las imágenes (logo del club, logos de patrocinadores) se guardan en la carpeta `imgs/` en la raíz del proyecto, y se referencian en `config.json` solo por nombre de archivo.
+
+## Pieles visuales (skins)
+
+La app es un único `index.html` — los datos y la lógica (parseo de GPX, filtros, pantallas) son siempre los mismos, pero el aspecto se puede cambiar sin tocar código. Hoy hay tres pieles: `default`, `yellowbird` (color plano, contorno negro) y `glassmorphism` (cristal esmerilado sobre fondo degradado).
+
+- **Para probar una piel sin cambiar nada**: añade `?skin=yellowbird` o `?skin=glassmorphism` a la URL.
+- **Para fijar la piel del sitio**: añade `"skin": "yellowbird"` en `rutas/config.json` (si no se define, usa `default`).
+
+Cada piel es una entrada del objeto `SKINS` dentro de `index.html`, con su propio `rutas/theme-<piel>.json` (o `rutas/theme.json` para `default`). Para añadir una piel nueva no hace falta duplicar el archivo: se copia una entrada de `SKINS`, se ajustan sus valores (radios, grosor de borde, paleta de insignias por tipo, si el título va en mayúsculas...) y se crea su `theme.json` correspondiente.
 
 ## Despliegue en GitHub Pages
 
@@ -105,7 +115,8 @@ Configuración inicial (una sola vez, manual):
 - `index.html` — toda la app (HTML + CSS + JS, sin dependencias ni build step)
 - `manifest.webmanifest` / `service-worker.js` / `icons/` — soporte PWA
 - `imgs/` — logo del club y logos de patrocinadores, referenciados desde `rutas/config.json`
-- `rutas/config.json` — título del sitio, banner del club, patrocinadores, enlaces, redes sociales (se muestran en la pantalla de inicio y el footer)
+- `rutas/config.json` — título del sitio, banner del club, patrocinadores, enlaces, redes sociales (se muestran en la pantalla de inicio y el footer), y qué piel visual usar (`skin`)
+- `rutas/theme.json` / `rutas/theme-yellowbird.json` / `rutas/theme-glassmorphism.json` — colores de cada piel visual (ver [Pieles visuales](#pieles-visuales-skins))
 - `rutas/manifest.json` — generado automáticamente, no editar a mano
 - `rutas/<TIPO>/*.gpx` — tracks, organizados por tipo
 - `scripts/build-manifest.js` — genera `rutas/manifest.json` recorriendo las carpetas de `rutas/`

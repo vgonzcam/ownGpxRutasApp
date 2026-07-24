@@ -213,7 +213,10 @@
       <li><a href="#redes-sociales">Redes sociales</a></li>
     </ol>
     <div class="file-label">Apariencia</div>
-    <ol><li><a href="#colores">Colores del sitio</a></li></ol>
+    <ol>
+      <li><a href="#colores">Colores del sitio</a></li>
+      <li><a href="#skin">Piel visual</a></li>
+    </ol>
     <div class="file-label">Si algo falla</div>
     <ol><li><a href="#problemas">Errores comunes</a></li></ol>
   </nav>
@@ -240,7 +243,8 @@
       <a class="flow-card" href="#patrocinadores"><span class="flow-n">07</span><h3>Patrocinadores</h3><p>Añadir, quitar u ocultar del todo la sección.</p></a>
       <a class="flow-card" href="#redes-sociales"><span class="flow-n">08</span><h3>Redes sociales</h3><p>Instagram, X, Facebook, Strava, YouTube.</p></a>
       <a class="flow-card" href="#colores"><span class="flow-n">09</span><h3>Colores del sitio</h3><p>Cambiar la paleta de la web, claro y oscuro.</p></a>
-      <a class="flow-card" href="#problemas"><span class="flow-n">10</span><h3>Si algo falla</h3><p>La web deja de cargar rutas, no ves tu cambio...</p></a>
+      <a class="flow-card" href="#skin"><span class="flow-n">10</span><h3>Piel visual</h3><p>Cambiar el estilo entero: plano, cristal...</p></a>
+      <a class="flow-card" href="#problemas"><span class="flow-n">11</span><h3>Si algo falla</h3><p>La web deja de cargar rutas, no ves tu cambio...</p></a>
     </div>
 
     <!-- ================= CÓMO FUNCIONA ================= -->
@@ -352,7 +356,7 @@
           <li><span class="n">2</span><span class="t">Arrastra el primer <code>.gpx</code> de ese tipo. Encima de la zona de subida aparece un campo de texto con la ruta de destino (algo como <span class="path">rutas/</span>) — edítalo para añadir el nombre de la carpeta nueva delante del archivo, en mayúsculas para que coincida con el resto: <span class="path">rutas/XC/mi-primera-ruta-xc.gpx</span>.</span></li>
           <li><span class="n">3</span><span class="t">Mensaje corto → <span class="gh-chip">◉ Commit directly to the main branch</span> → <span class="gh-btn">Commit changes</span>. GitHub crea la carpeta sola, en el mismo paso, porque no existía.</span></li>
         </ol>
-        <div class="callout">El tipo nuevo aparece solo en el desplegable de filtros, al final de la lista. Si quieres decidir en qué posición sale, añade su nombre a <code>filters.trackTypes</code> en <code>config.json</code> — <a href="manual-configuracion.html#filtros">ver referencia ↗</a>.</div>
+        <div class="callout">El tipo nuevo aparece solo como una píldora más en los filtros, al final de la lista. Si quieres decidir en qué posición sale, añade su nombre a <code>filters.trackTypes</code> en <code>config.json</code> — <a href="manual-configuracion.html#filtros">ver referencia ↗</a>.</div>
       </div>
 
       <div class="recipe-block" id="eliminar-ruta">
@@ -516,6 +520,22 @@
           <div class="row new"><span class="tag">+</span>"primary": "#c2410c",</div>
         </div>
         <div class="callout warn">Un color mal elegido puede dejar texto ilegible (por ejemplo, letra clara sobre fondo claro). Antes de cambiar varios a la vez, revisa qué controla cada uno de los 12: <a href="manual-configuracion.html#tema-tokens">referencia de colores ↗</a>, con una miniatura señalando dónde se ve cada uno.</div>
+      </div>
+
+      <div class="recipe-block" id="skin">
+        <h3 class="recipe-title">10 · Piel visual</h3>
+        <p class="recipe-when">Cambiar el estilo entero de la web (radios de esquina, grosor de borde, si hay efecto de cristal...), no solo los colores. Útil, por ejemplo, para probar un aspecto distinto en una época del año concreta.</p>
+        <a class="ref-pattern" href="#patron-editar"><span class="letter">A</span>Editar un texto</a>
+        <p style="font-size:13.5px; color:var(--ink-soft); max-width:66ch; margin:16px 0;">Hoy hay tres pieles ya hechas: <code>"default"</code>, <code>"yellowbird"</code> (color plano, contorno negro) y <code>"glassmorphism"</code> (cristal esmerilado sobre fondo degradado). Los datos de las rutas no cambian, solo el aspecto.</p>
+        <ol class="steps">
+          <li><span class="n">1</span><span class="t">Abre <span class="path">rutas/config.json</span> con el <a href="#patron-editar">Patrón A</a>.</span></li>
+          <li><span class="n">2</span><span class="t">Añade o edita la clave <code>skin</code> en la raíz del archivo.</span></li>
+        </ol>
+        <div class="diff">
+          <div class="row old"><span class="tag">−</span>"skin": "default",</div>
+          <div class="row new"><span class="tag">+</span>"skin": "yellowbird",</div>
+        </div>
+        <div class="callout">Para probar una piel sin tocar el archivo (ni esperar el despliegue), añade <code>?skin=yellowbird</code> o <code>?skin=glassmorphism</code> al final de la URL de la web — solo cambia en esa visita, no afecta a nadie más.</div>
       </div>
     </section>
 

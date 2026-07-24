@@ -534,6 +534,7 @@
     </ol>
     <div class="file-label">rutas/config.json</div>
     <ol>
+      <li><a href="#skin">Piel visual</a></li>
       <li><a href="#identidad">Identidad del club</a></li>
       <li><a href="#sponsors-toggle">Patrocinadores</a></li>
       <li><a href="#overrides">Overrides de ruta</a></li>
@@ -700,7 +701,7 @@
               <tr><td class="field-name">"← Inici" / logo / tema</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">—</td><td class="dim">— (igual que en inicio)</td></tr>
               <tr><td class="field-name">Título grande</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>config.json</code> → <code>siteTitle</code></td></tr>
               <tr><td class="field-name">"N rutas carregades"</td><td><span class="origin-tag origin-gpx">GPX</span></td><td>calculado: nº de <code>.gpx</code> de <code>manifest.json</code> que se han podido leer</td><td class="dim">—</td></tr>
-              <tr><td class="field-name">Opciones del desplegable de tipo</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">tipos = nombres de carpeta en <code>rutas/</code></td><td><code>filters.trackTypes</code> (solo el orden)</td></tr>
+              <tr><td class="field-name">Píldoras de tipo (acumulables)</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">tipos = nombres de carpeta en <code>rutas/</code></td><td><code>filters.trackTypes</code> (solo el orden)</td></tr>
               <tr><td class="field-name">Etiquetas "Fàcil / Difícil / Molt difícil"</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>filters.difficultyLabels</code></td></tr>
               <tr><td class="field-name">Rangos de distancia / desnivell</td><td><span class="origin-tag origin-json">JSON</span></td><td class="dim">—</td><td><code>filters.distanceBuckets</code> / <code>elevationBuckets</code></td></tr>
               <tr><td class="field-name">Etiqueta de tipo en la tarjeta</td><td><span class="origin-tag origin-fijo">FIJO</span></td><td class="dim">carpeta del archivo, vía <code>manifest.json</code></td><td class="dim">— (no está en <code>config.json</code>)</td></tr>
@@ -756,6 +757,18 @@
     <section class="file-section" id="config">
       <h2 class="file-title"><span class="dot"></span>rutas/config.json</h2>
       <p class="file-note">Archivo de configuración general: identidad del club, patrocinadores, filtros, redes sociales y correcciones manuales de rutas. Se edita a mano y <strong>nunca</strong> se regenera solo (a diferencia de <code>manifest.json</code>).</p>
+
+      <div class="field" id="skin" style="display:block;">
+        <div class="field-copy" style="max-width:none;">
+          <h3><span class="key">skin</span> <span class="type-pill">string</span></h3>
+          <p>Qué piel visual usa todo el sitio. Los datos y la lógica son siempre los mismos (el mismo <code class="mono">index.html</code>); esto solo cambia radios de esquina, grosor de borde, paleta de las etiquetas de tipo de ruta y si hay o no efecto de cristal.</p>
+          <pre class="snippet" style="margin-top:0;">"skin": <span class="str">"yellowbird"</span></pre>
+          <p class="also">Valores válidos: <code class="mono">"default"</code>, <code class="mono">"yellowbird"</code> (color plano, contorno negro) o <code class="mono">"glassmorphism"</code> (cristal esmerilado sobre fondo degradado). Si no se define, se usa <code class="mono">"default"</code>.</p>
+        </div>
+        <div class="note-box">
+          Para probar una piel sin tocar este archivo, añade <code class="mono">?skin=yellowbird</code> (o <code class="mono">glassmorphism</code>) al final de la URL de la web — manda sobre lo que diga <code class="mono">config.json</code>, solo en esa visita.
+        </div>
+      </div>
 
       <div class="field" id="identidad" style="display:block;">
         <div class="field-copy" style="max-width:none;">
@@ -921,20 +934,22 @@
       <div class="field" id="filtros">
         <div class="field-copy">
           <h3><span class="key">filters</span> <span class="type-pill">object</span></h3>
-          <p><code class="mono">trackTypes</code> fija el orden de las opciones del desplegable de tipo (los tipos detectados que no estén en la lista se añaden al final, ordenados alfabéticamente). <code class="mono">difficultyLabels</code> traduce las claves internas a texto visible. <code class="mono">distanceBuckets</code> / <code class="mono">elevationBuckets</code> definen los rangos del panel "Filtres avançats" — ese, el de dificultad/distància/desnivell, sigue siendo de chips.</p>
+          <p><code class="mono">trackTypes</code> fija el orden de las píldoras de tipo (los tipos detectados que no estén en la lista se añaden al final, ordenados alfabéticamente). <code class="mono">difficultyLabels</code> traduce las claves internas a texto visible. <code class="mono">distanceBuckets</code> / <code class="mono">elevationBuckets</code> definen los rangos del panel "Filtres avançats". Las cuatro tipologías (tipo, dificultat, distància, desnivell) son píldoras acumulables: se puede marcar más de una dentro de la misma tipología (p. ej. ROAD y GRAVEL a la vez) y se muestran las rutas que casen con cualquiera de las marcadas; la píldora "Tots" simplemente desmarca todas las de esa fila.</p>
           <pre class="snippet">"trackTypes": [<span class="str">"ROAD"</span>, <span class="str">"GRAVEL"</span>, <span class="str">"TRAIL"</span>],
 "difficultyLabels": { <span class="str">"dificil"</span>: <span class="str">"Difícil"</span> }</pre>
         </div>
         <div class="mockup-wrap">
-          <div class="mockup-label">Desplegable de tipo — orden = orden de la lista</div>
+          <div class="mockup-label">Píldoras de tipo — orden = orden de la lista, varias a la vez</div>
           <div class="mockup app app-light" style="padding:14px 16px;">
-            <div style="border:1px solid #e2e8f0; border-radius:10px; padding:8px 10px; font-size:11px; display:flex; align-items:center; justify-content:space-between; position:relative;">
-              <span>Tots els tipus</span><span>⌄</span>
-              <span class="callout" style="position:absolute; top:-8px; right:-8px;">1</span>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; position:relative;">
+              <span style="border-radius:14px; padding:5px 10px; font-size:11px; background:#f1f5f9;">Tots</span>
+              <span style="border-radius:14px; padding:5px 10px; font-size:11px; background:#2563eb; color:#fff; position:relative;">ROAD<span class="callout" style="position:absolute; top:-8px; right:-8px;">1</span></span>
+              <span style="border-radius:14px; padding:5px 10px; font-size:11px; background:#2563eb; color:#fff;">GRAVEL</span>
+              <span style="border-radius:14px; padding:5px 10px; font-size:11px; background:#f1f5f9;">TRAIL</span>
             </div>
           </div>
           <div class="legend">
-            <div class="row"><span class="num">1</span> las opciones del desplegable, en ese orden, vienen de <code class="mono">trackTypes</code></div>
+            <div class="row"><span class="num">1</span> ROAD y GRAVEL marcadas a la vez, en el orden de <code class="mono">trackTypes</code> — se muestran rutas de ambos tipos</div>
           </div>
         </div>
       </div>
